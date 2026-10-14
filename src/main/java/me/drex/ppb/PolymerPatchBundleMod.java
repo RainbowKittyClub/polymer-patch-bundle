@@ -8,6 +8,7 @@ import eu.pb4.polymer.resourcepack.extras.api.ResourcePackExtras;
 import eu.pb4.polymer.resourcepack.extras.api.format.item.ItemAsset;
 import eu.pb4.polymer.resourcepack.extras.api.format.item.model.BasicItemModel;
 import eu.pb4.polymer.resourcepack.extras.api.format.item.tint.MapColorTintSource;
+import eu.pb4.polymer.soundpatcher.api.SoundPatcher;
 import eu.pb4.polymer.virtualentity.api.attachment.BlockAwareAttachment;
 import eu.pb4.polymer.virtualentity.impl.HolderHolder;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
@@ -26,6 +27,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,6 +56,9 @@ public class PolymerPatchBundleMod implements ModInitializer {
         }
         ColorMapHelper.init();
         ColorProviderRegistry.init();
+        // Textured full blocks are note block states, so clients play wood sounds for all of them;
+        // the server sends each block's real sounds instead
+        SoundPatcher.convertIntoServerSound(SoundType.WOOD);
 
         for (String modNamespace : MOD_NAMESPACES) {
             setupModAssets(modNamespace);
