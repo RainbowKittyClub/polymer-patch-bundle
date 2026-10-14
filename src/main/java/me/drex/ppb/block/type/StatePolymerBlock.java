@@ -12,6 +12,7 @@ import eu.pb4.polymer.resourcepack.extras.api.format.blockstate.BlockStateAsset;
 import eu.pb4.polymer.resourcepack.extras.api.format.blockstate.StateModelVariant;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import me.drex.ppb.PolymerPatchBundleMod;
+import me.drex.ppb.block.ClusteredCarriers;
 import me.drex.ppb.res.ResourceHelper;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.core.BlockPos;
@@ -54,9 +55,7 @@ public record StatePolymerBlock(Map<BlockState, BlockState> map,
             for (var state : block.getStateDefinition().getPossibleStates()) {
                 for (var pair : list) {
                     if (pair.getFirst().test(state) && canUseBlock.test(state)) {
-                        map.put(state, cache.computeIfAbsent(pair.getSecond(), c -> PolymerBlockResourceUtils.requestBlock(
-                            type,
-                            c.stream().map(x -> new PolymerBlockModel(x.model(), x.x(), x.y(), x.uvlock(), x.weigth())).toArray(PolymerBlockModel[]::new))));
+                        map.put(state, cache.computeIfAbsent(pair.getSecond(), c -> request(type, c)));
                         break;
                     }
                 }
@@ -67,6 +66,17 @@ public record StatePolymerBlock(Map<BlockState, BlockState> map,
             PolymerPatchBundleMod.LOGGER.error("Failed to handle state block {}", id, e);
             return null;
         }
+    }
+
+    private static @Nullable BlockState request(BlockModelType type, List<StateModelVariant> variants) {
+        var model = variants.stream().map(x -> new PolymerBlockModel(x.model(), x.x(), x.y(), x.uvlock(), x.weigth())).toArray(PolymerBlockModel[]::new);
+        if (type == BlockModelType.FULL_BLOCK) {
+            var clustered = ClusteredCarriers.request(variants, model);
+            if (clustered != null) {
+                return clustered;
+            }
+        }
+        return PolymerBlockResourceUtils.requestBlock(type, model);
     }
 
     @Override

@@ -120,9 +120,10 @@ public class PolymerBlockHelper {
         BlockStateAsset blockStateAsset = ResourceHelper.decodeBlockState(id);
 
         var model = blockStateAsset.variants().get().get(variant);
+        var models = model.stream().map(x -> new PolymerBlockModel(x.model(), x.x(), x.y(), x.uvlock(), x.weigth())).toArray(PolymerBlockModel[]::new);
 
-        return PolymerBlockResourceUtils.requestBlock(
-            blockModelType,
-            model.stream().map(x -> new PolymerBlockModel(x.model(), x.x(), x.y(), x.uvlock(), x.weigth())).toArray(PolymerBlockModel[]::new));
+        return blockModelType == BlockModelType.FULL_BLOCK
+            ? ClusteredCarriers.requestOrNormal(model, models)
+            : PolymerBlockResourceUtils.requestBlock(blockModelType, models);
     }
 }
