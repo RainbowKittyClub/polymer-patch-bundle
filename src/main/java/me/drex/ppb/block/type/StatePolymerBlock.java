@@ -80,6 +80,11 @@ public record StatePolymerBlock(Map<BlockState, BlockState> map,
         return map.get(initialBlockState) != null ? null : fallback.createElementHolder(world, pos, initialBlockState);
     }
 
+    // True when the client gets a real textured state for this state, here or in a nested fallback.
+    public boolean isTextured(BlockState blockState) {
+        return map.get(blockState) != null || (fallback instanceof StatePolymerBlock statePolymerBlock && statePolymerBlock.isTextured(blockState));
+    }
+
     @Override
     public boolean isIgnoringBlockInteractionPlaySoundExceptedEntity(BlockState state, ServerPlayer player, InteractionHand hand, ItemStack stack, ServerLevel world, BlockHitResult blockHitResult) {
         return true;

@@ -11,6 +11,7 @@ import eu.pb4.polymer.virtualentity.api.BlockWithElementHolder;
 import me.drex.ppb.PolymerPatchBundleMod;
 import me.drex.ppb.block.mod.*;
 import me.drex.ppb.block.type.*;
+import me.drex.ppb.mixin.BlockStateBaseAccessor;
 import me.drex.ppb.res.ResourceHelper;
 import me.drex.ppb.res.ResourcePackGenerator;
 import net.minecraft.core.BlockPos;
@@ -41,9 +42,21 @@ public class PolymerBlockHelper {
         }
 
         PolymerBlock polymerBlock = requestPolymerBlock(id, block);
+        disableDisplayOcclusion(block, polymerBlock);
         PolymerBlock.registerOverlay(block, polymerBlock);
         if (polymerBlock instanceof BlockWithElementHolder blockWithElementHolder) {
             BlockWithElementHolder.registerOverlay(block, blockWithElementHolder);
+        }
+    }
+
+    // Displays light themselves from inside their block, so display-rendered states must not occlude;
+    // textured states keep the block's own occlusion. Runs before Fabric's registry callback builds
+    // the state caches (initCache), so light and shapes follow it.
+    private static void disableDisplayOcclusion(Block block, PolymerBlock polymerBlock) {
+        for (BlockState state : block.getStateDefinition().getPossibleStates()) {
+            if (!(polymerBlock instanceof StatePolymerBlock statePolymerBlock && statePolymerBlock.isTextured(state))) {
+                ((BlockStateBaseAccessor) state).ppb$setCanOcclude(false);
+            }
         }
     }
 
