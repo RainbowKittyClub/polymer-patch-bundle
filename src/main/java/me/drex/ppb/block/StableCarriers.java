@@ -20,8 +20,9 @@ import java.util.Map;
  * client's own block updates, so breaking or placing next to a tree trunk or a stretch of terrain
  * doesn't show other blocks along its column until the server answers. Natural upright trunks come
  * first, then the most visible terrain. Slots are fixed so the pack never depends on registration
- * order; enderscape-polymer-patch holds 24, 25, 28, 32-39 and 41-43. Snowless andisol grass is
- * left out: it is drawn on a leaves state, which these updates never change.
+ * order; enderscape-polymer-patch holds 21, 24, 25, 28, 32-39, 41-43, 46-48 and sensible-storage
+ * 17. Snowless andisol grass is left out: it is drawn on a leaves state, which these updates never
+ * change.
  */
 public final class StableCarriers {
     private static final List<Entry> ENTRIES = List.of(
@@ -38,15 +39,13 @@ public final class StableCarriers {
         entry(10, "traverse:fir_log", "axis=y"),
         entry(11, "woods_and_mires:pine_log", "axis=y"),
         entry(12, "woods_and_mires:aged_pine_log", "axis=y,mid=false"),
-        entry(13, "woods_and_mires:aged_pine_log", "axis=y,mid=true"),
+        entry(13, "terrestria:rainbow_eucalyptus_quarter_log", "axis=y,bark_side=southeast"),
         entry(14, "terrestria:cypress_log", "axis=y"),
         entry(15, "terrestria:cypress_quarter_log", "axis=y,bark_side=northeast"),
         entry(16, "terrestria:cypress_quarter_log", "axis=y,bark_side=northwest"),
-        entry(17, "terrestria:cypress_quarter_log", "axis=y,bark_side=southeast"),
         entry(18, "terrestria:cypress_quarter_log", "axis=y,bark_side=southwest"),
         entry(19, "terrestria:rainbow_eucalyptus_quarter_log", "axis=y,bark_side=northeast"),
         entry(20, "terrestria:rainbow_eucalyptus_quarter_log", "axis=y,bark_side=northwest"),
-        entry(21, "terrestria:rainbow_eucalyptus_quarter_log", "axis=y,bark_side=southeast"),
         entry(22, "terrestria:rainbow_eucalyptus_quarter_log", "axis=y,bark_side=southwest"),
         entry(23, "terrestria:rainbow_eucalyptus_log", "axis=y"),
         entry(26, "cinderscapes:umbral_stem", "axis=y"),
@@ -56,10 +55,7 @@ public final class StableCarriers {
         entry(31, "terrestria:volcanic_sand", ""),
         entry(40, "cinderscapes:umbral_nylium", ""),
         entry(44, "terrestria:andisol_grass_block", "snowy=true"),
-        entry(45, "cinderscapes:umbral_wart_block", ""),
-        entry(46, "terrestria:rubber_log", "axis=y"),
-        entry(47, "terrestria:japanese_maple_log", "axis=y"),
-        entry(48, "terrestria:willow_log", "axis=y")
+        entry(45, "cinderscapes:umbral_wart_block", "")
     );
     private static final @Nullable MethodHandle REQUEST_STABLE_BLOCK = findRequestStableBlock();
 

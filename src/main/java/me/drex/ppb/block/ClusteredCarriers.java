@@ -33,37 +33,44 @@ import java.util.function.Predicate;
  * block updates turn a note block into the bass state of its note and powered value, which is that
  * group's stable-slot block (see Polymer's requestStableBlock), so a block grouped with a similar
  * colour flashes subtly instead of as something unrelated. Groups are tried nearest colour first
- * (CIEDE2000, ties to the lower slot). Of each group's 24 free instruments, normal requests fill the
- * first five; this fork uses the next eleven and enderscape-polymer-patch the last eight, so neither
- * depends on the other's load order.
+ * (CIEDE2000, ties to the lower slot). Of each group's 24 free instruments, normal requests fill
+ * the first, kalic0re's carriers (sensible-storage) the next four, this fork the next eleven and
+ * enderscape-polymer-patch the last eight, so no fork depends on another's load order. A group
+ * whose slot anchors a block type (the plain bookshelves) is that type's alone and skipped here.
  */
 public final class ClusteredCarriers {
     private static final Set<String> INSTRUMENTS = Set.of("chime", "xylophone", "iron_xylophone", "cow_bell",
         "didgeridoo", "bit", "banjo", "pling", "trumpet", "trumpet_exposed", "trumpet_oxidized");
     private static final double[] NOTE_BLOCK_LAB = {27.6, 10.6, 16.4};
 
-    // Every stable slot in order, both forks' (mirrors StableCarriers here and in enderscape-polymer-patch)
+    // Every stable slot in order with its anchor type, identical in polymer-patch-bundle,
+    // enderscape-polymer-patch and kalic0re's common/carrier. An anchor's group is sensible-storage's.
     private static final String[][] SLOTS = {
-        {"terrestria:redwood_quarter_log", "axis=y,bark_side=northeast"}, {"terrestria:redwood_quarter_log", "axis=y,bark_side=northwest"},
-        {"terrestria:redwood_quarter_log", "axis=y,bark_side=southeast"}, {"terrestria:redwood_quarter_log", "axis=y,bark_side=southwest"},
-        {"terrestria:hemlock_quarter_log", "axis=y,bark_side=northeast"}, {"terrestria:hemlock_quarter_log", "axis=y,bark_side=northwest"},
-        {"terrestria:hemlock_quarter_log", "axis=y,bark_side=southeast"}, {"terrestria:hemlock_quarter_log", "axis=y,bark_side=southwest"},
-        {"terrestria:redwood_log", "axis=y"}, {"terrestria:hemlock_log", "axis=y"}, {"traverse:fir_log", "axis=y"},
-        {"woods_and_mires:pine_log", "axis=y"}, {"woods_and_mires:aged_pine_log", "axis=y,mid=false"},
-        {"woods_and_mires:aged_pine_log", "axis=y,mid=true"}, {"terrestria:cypress_log", "axis=y"},
-        {"terrestria:cypress_quarter_log", "axis=y,bark_side=northeast"}, {"terrestria:cypress_quarter_log", "axis=y,bark_side=northwest"},
-        {"terrestria:cypress_quarter_log", "axis=y,bark_side=southeast"}, {"terrestria:cypress_quarter_log", "axis=y,bark_side=southwest"},
-        {"terrestria:rainbow_eucalyptus_quarter_log", "axis=y,bark_side=northeast"}, {"terrestria:rainbow_eucalyptus_quarter_log", "axis=y,bark_side=northwest"},
-        {"terrestria:rainbow_eucalyptus_quarter_log", "axis=y,bark_side=southeast"}, {"terrestria:rainbow_eucalyptus_quarter_log", "axis=y,bark_side=southwest"},
-        {"terrestria:rainbow_eucalyptus_log", "axis=y"}, {"enderscape:celestial_stem", "axis=y"}, {"enderscape:murublight_stem", "axis=y"},
-        {"cinderscapes:umbral_stem", "axis=y"}, {"cinderscapes:scorched_stem", "axis=y"}, {"enderscape:veiled_log", "axis=y"},
-        {"terrestria:andisol", ""}, {"terrestria:volcanic_rock", ""}, {"terrestria:volcanic_sand", ""},
-        {"enderscape:mirestone", ""}, {"enderscape:veradite", ""}, {"enderscape:celestial_overgrowth", "facing=up"},
-        {"enderscape:veiled_end_stone", "facing=up"}, {"enderscape:corrupt_overgrowth", "facing=up"}, {"enderscape:alluring_magnia", ""},
-        {"enderscape:repulsive_magnia", ""}, {"enderscape:kurodite", ""}, {"cinderscapes:umbral_nylium", ""},
-        {"enderscape:celestial_cap", ""}, {"enderscape:murublight_cap", ""}, {"enderscape:void_shale", "stress=0"},
-        {"terrestria:andisol_grass_block", "snowy=true"}, {"cinderscapes:umbral_wart_block", ""}, {"terrestria:rubber_log", "axis=y"},
-        {"terrestria:japanese_maple_log", "axis=y"}, {"terrestria:willow_log", "axis=y"}
+        {"terrestria:redwood_quarter_log", "axis=y,bark_side=northeast", ""}, {"terrestria:redwood_quarter_log", "axis=y,bark_side=northwest", ""},
+        {"terrestria:redwood_quarter_log", "axis=y,bark_side=southeast", ""}, {"terrestria:redwood_quarter_log", "axis=y,bark_side=southwest", ""},
+        {"terrestria:hemlock_quarter_log", "axis=y,bark_side=northeast", ""}, {"terrestria:hemlock_quarter_log", "axis=y,bark_side=northwest", ""},
+        {"terrestria:hemlock_quarter_log", "axis=y,bark_side=southeast", ""}, {"terrestria:hemlock_quarter_log", "axis=y,bark_side=southwest", ""},
+        {"terrestria:redwood_log", "axis=y", ""}, {"terrestria:hemlock_log", "axis=y", ""},
+        {"traverse:fir_log", "axis=y", ""}, {"woods_and_mires:pine_log", "axis=y", ""},
+        {"woods_and_mires:aged_pine_log", "axis=y,mid=false", ""}, {"terrestria:rainbow_eucalyptus_quarter_log", "axis=y,bark_side=southeast", ""},
+        {"terrestria:cypress_log", "axis=y", ""}, {"terrestria:cypress_quarter_log", "axis=y,bark_side=northeast", ""},
+        {"terrestria:cypress_quarter_log", "axis=y,bark_side=northwest", ""}, {"sensiblestorage:fir_bookshelf", "", "bookshelf"},
+        {"terrestria:cypress_quarter_log", "axis=y,bark_side=southwest", ""}, {"terrestria:rainbow_eucalyptus_quarter_log", "axis=y,bark_side=northeast", ""},
+        {"terrestria:rainbow_eucalyptus_quarter_log", "axis=y,bark_side=northwest", ""}, {"enderscape:shadoline_pillar", "axis=y", ""},
+        {"terrestria:rainbow_eucalyptus_quarter_log", "axis=y,bark_side=southwest", ""}, {"terrestria:rainbow_eucalyptus_log", "axis=y", ""},
+        {"enderscape:celestial_stem", "axis=y", ""}, {"enderscape:murublight_stem", "axis=y", ""},
+        {"cinderscapes:umbral_stem", "axis=y", ""}, {"cinderscapes:scorched_stem", "axis=y", ""},
+        {"enderscape:veiled_log", "axis=y", ""}, {"terrestria:andisol", "", ""},
+        {"terrestria:volcanic_rock", "", ""}, {"terrestria:volcanic_sand", "", ""},
+        {"enderscape:mirestone", "", ""}, {"enderscape:veradite", "", ""},
+        {"enderscape:celestial_overgrowth", "facing=up", ""}, {"enderscape:veiled_end_stone", "facing=up", ""},
+        {"enderscape:corrupt_overgrowth", "facing=up", ""}, {"enderscape:alluring_magnia", "", ""},
+        {"enderscape:repulsive_magnia", "", ""}, {"enderscape:kurodite", "", ""},
+        {"cinderscapes:umbral_nylium", "", ""}, {"enderscape:celestial_cap", "", ""},
+        {"enderscape:murublight_cap", "", ""}, {"enderscape:void_shale", "stress=0", ""},
+        {"terrestria:andisol_grass_block", "snowy=true", ""}, {"cinderscapes:umbral_wart_block", "", ""},
+        {"enderscape:stripped_murublight_stem", "axis=y", ""}, {"enderscape:stripped_celestial_stem", "axis=y", ""},
+        {"enderscape:stripped_veiled_wood", "axis=y", ""}
     };
 
     private static final @Nullable MethodHandle REQUEST_BLOCK = findRequestBlock();
@@ -99,6 +106,9 @@ public final class ClusteredCarriers {
         }
         order.sort(Comparator.<Integer>comparingDouble(slot -> distance[slot]).thenComparingInt(slot -> slot));
         for (int slot : order) {
+            if (!SLOTS[slot][2].isEmpty()) {
+                continue;
+            }
             int note = slot < 48 ? slot / 2 + 1 : 0;
             boolean powered = slot < 48 ? slot % 2 == 1 : true;
             Predicate<BlockState> predicate = state -> state.is(Blocks.NOTE_BLOCK) && state.getValue(NoteBlock.NOTE) == note
