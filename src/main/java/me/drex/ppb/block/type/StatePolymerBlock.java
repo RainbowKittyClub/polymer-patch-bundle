@@ -12,6 +12,7 @@ import eu.pb4.polymer.resourcepack.extras.api.format.blockstate.BlockStateAsset;
 import eu.pb4.polymer.resourcepack.extras.api.format.blockstate.StateModelVariant;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import me.drex.ppb.PolymerPatchBundleMod;
+import me.drex.ppb.block.StableCarriers;
 import me.drex.ppb.res.ResourceHelper;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.core.BlockPos;
@@ -51,12 +52,27 @@ public record StatePolymerBlock(Map<BlockState, BlockState> map,
             BlockStateModelManager.parseVariants(block, blockStateAsset.variants().orElseThrow(), (a, b) -> list.add(new Pair<>(a, b)));
             var map = new IdentityHashMap<BlockState, BlockState>();
 
+            // Stable slots first, so a state sharing its models with one never takes a normal state
+            if (type == BlockModelType.FULL_BLOCK) {
+                for (var state : block.getStateDefinition().getPossibleStates()) {
+                    for (var pair : list) {
+                        if (pair.getFirst().test(state) && canUseBlock.test(state)) {
+                            if (!cache.containsKey(pair.getSecond())) {
+                                var stable = StableCarriers.request(id, state, toModels(pair.getSecond()));
+                                if (stable != null) {
+                                    cache.put(pair.getSecond(), stable);
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+
             for (var state : block.getStateDefinition().getPossibleStates()) {
                 for (var pair : list) {
                     if (pair.getFirst().test(state) && canUseBlock.test(state)) {
-                        map.put(state, cache.computeIfAbsent(pair.getSecond(), c -> PolymerBlockResourceUtils.requestBlock(
-                            type,
-                            c.stream().map(x -> new PolymerBlockModel(x.model(), x.x(), x.y(), x.uvlock(), x.weigth())).toArray(PolymerBlockModel[]::new))));
+                        map.put(state, cache.computeIfAbsent(pair.getSecond(), c -> PolymerBlockResourceUtils.requestBlock(type, toModels(c))));
                         break;
                     }
                 }
@@ -67,6 +83,10 @@ public record StatePolymerBlock(Map<BlockState, BlockState> map,
             PolymerPatchBundleMod.LOGGER.error("Failed to handle state block {}", id, e);
             return null;
         }
+    }
+
+    private static PolymerBlockModel[] toModels(List<StateModelVariant> variants) {
+        return variants.stream().map(x -> new PolymerBlockModel(x.model(), x.x(), x.y(), x.uvlock(), x.weigth())).toArray(PolymerBlockModel[]::new);
     }
 
     @Override
