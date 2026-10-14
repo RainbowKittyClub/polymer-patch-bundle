@@ -68,6 +68,9 @@ public class ResourcePackGenerator {
 
     private static void build(ResourcePackBuilder builder) {
         var atlas = AtlasAsset.builder();
+        // forEachResource walks a Map.copyOf, whose order changes per run, and a template is both
+        // expanded itself and read back as a child's parent; writing afterwards expands it once.
+        Map<String, byte[]> expanded = new TreeMap<>();
         builder.forEachResource((string, packResource) -> {
             String[] parts = string.split("/", 4);
             if (parts.length < 4) return;
@@ -80,12 +83,12 @@ public class ResourcePackGenerator {
                     var parentId = asset.parent().get();
                     var parentAsset = ModelAsset.fromJson(new String(Objects.requireNonNull(builder.getDataOrSource(AssetPaths.model(parentId) + ".json")), StandardCharsets.UTF_8));
 
-                    builder.addData(AssetPaths.model(PolymerPatchBundleMod.MOD_ID, parentId.getPath()) + ".json", new ModelAsset(parentAsset.parent(), parentAsset.elements().map(x -> x.stream()
+                    expanded.put(AssetPaths.model(PolymerPatchBundleMod.MOD_ID, parentId.getPath()) + ".json", new ModelAsset(parentAsset.parent(), parentAsset.elements().map(x -> x.stream()
                         .map(element -> new ModelElement(element.from().subtract(EXPANSION), element.to().add(EXPANSION),
                             element.faces(), element.rotation(), element.shade(), element.lightEmission())
                         ).toList()), parentAsset.textures(), parentAsset.display(), parentAsset.guiLight(), parentAsset.ambientOcclusion()).toBytes());
                     if (asset.elements().isPresent()) {
-                        builder.addData(string, new ModelAsset(asset.parent(), asset.elements().map(x -> x.stream()
+                        expanded.put(string, new ModelAsset(asset.parent(), asset.elements().map(x -> x.stream()
                             .map(element -> new ModelElement(element.from().subtract(EXPANSION), element.to().add(EXPANSION),
                                 element.faces(), element.rotation(), element.shade(), element.lightEmission())
                             ).toList()), asset.textures(), asset.display(), asset.guiLight(), asset.ambientOcclusion()).toBytes());
@@ -94,6 +97,7 @@ public class ResourcePackGenerator {
             } catch (IdentifierException ignored) {
             }
         });
+        expanded.forEach(builder::addData);
 
         PolymerPatchBundleMod.MOD_ASSET_IDS.forEach(modid -> {
             for (var entry : BlockStateModelManager.UV_LOCKED_MODELS.getOrDefault(modid, Collections.emptyMap()).entrySet()) {
