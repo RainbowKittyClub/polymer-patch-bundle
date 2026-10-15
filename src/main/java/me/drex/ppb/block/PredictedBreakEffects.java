@@ -10,7 +10,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,8 +26,8 @@ public record PredictedBreakEffects(ServerPlayer player, boolean sound, boolean 
     public static final ScopedValue<PredictedBreakEffects> CURRENT = ScopedValue.newInstance();
     private static final @Nullable MethodHandle IS_BROKEN_BY_CLIENT = findIsBrokenByClient();
 
-    public static @Nullable PredictedBreakEffects of(Level level, Player player, BlockPos pos, BlockState state) {
-        if (level.isClientSide() || !(player instanceof ServerPlayer serverPlayer)
+    public static @Nullable PredictedBreakEffects of(Player player, BlockPos pos, BlockState state) {
+        if (!(player instanceof ServerPlayer serverPlayer)
             || !(PolymerSyncedObject.getSyncedObject(BuiltInRegistries.BLOCK, state.getBlock()) instanceof CustomBreakingParticleBlock block)
             || !isBrokenByClient(serverPlayer, pos)) {
             return null;
