@@ -21,7 +21,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 
 // layer 1 and 8 are very common in world generation and shouldn't use display entities
-public record LayerPolymerBlock(BlockState layer1, BlockState layer8) implements FactoryBlock, PolymerTexturedBlock, BSMMParticleBlock {
+public record LayerPolymerBlock(BlockState layer1, BlockState layer8) implements FactoryBlock, PolymerTexturedBlock, BSMMParticleBlock, TexturedStates {
 
     public static LayerPolymerBlock of(Identifier id, Block block) {
         try {
@@ -33,6 +33,11 @@ public record LayerPolymerBlock(BlockState layer1, BlockState layer8) implements
             PolymerPatchBundleMod.LOGGER.error("Failed to handle layered block {}", id, e);
             return null;
         }
+    }
+
+    @Override
+    public boolean isTextured(BlockState state) {
+        return (state.getValue(BlockStateProperties.LAYERS) == 1 ? layer1 : layer8) != null;
     }
 
     @Override

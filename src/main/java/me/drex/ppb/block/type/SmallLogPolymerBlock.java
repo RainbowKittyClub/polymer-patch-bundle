@@ -35,7 +35,7 @@ import java.io.IOException;
 import java.util.*;
 
 public record SmallLogPolymerBlock(
-    Map<Direction.Axis, BlockState> clientBlock) implements FactoryBlock, PolymerTexturedBlock, BSMMParticleBlock {
+    Map<Direction.Axis, BlockState> clientBlock) implements FactoryBlock, PolymerTexturedBlock, BSMMParticleBlock, TexturedStates {
 
     private static final Map<Identifier, ModelAsset> MODELS = new HashMap<>();
     private static final Set<Identifier> USED_TEXTURES = new HashSet<>();
@@ -195,6 +195,11 @@ public record SmallLogPolymerBlock(
         }
 
         return new SmallLogPolymerBlock(clientBlock);
+    }
+
+    @Override
+    public boolean isTextured(BlockState state) {
+        return clientBlock.get(state.getValue(SmallLogBlock.AXIS)) != null;
     }
 
     @Override

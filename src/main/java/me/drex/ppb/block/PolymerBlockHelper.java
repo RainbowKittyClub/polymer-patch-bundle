@@ -54,7 +54,7 @@ public class PolymerBlockHelper {
     // the state caches (initCache), so light and shapes follow it.
     private static void disableDisplayOcclusion(Block block, PolymerBlock polymerBlock) {
         for (BlockState state : block.getStateDefinition().getPossibleStates()) {
-            if (!(polymerBlock instanceof StatePolymerBlock statePolymerBlock && statePolymerBlock.isTextured(state))) {
+            if (!(polymerBlock instanceof TexturedStates textured && textured.isTextured(state))) {
                 ((BlockStateBaseAccessor) state).ppb$setCanOcclude(false);
             }
         }
