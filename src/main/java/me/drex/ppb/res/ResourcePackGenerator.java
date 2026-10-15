@@ -71,6 +71,8 @@ public class ResourcePackGenerator {
         // forEachResource walks a Map.copyOf, whose order changes per run, and a template is both
         // expanded itself and read back as a child's parent; writing afterwards expands it once.
         Map<String, byte[]> expanded = new TreeMap<>();
+        // Children share a few parents; the walk never changes the pack, so each expands once.
+        Map<Identifier, byte[]> expandedParents = new HashMap<>();
         builder.forEachResource((string, packResource) -> {
             String[] parts = string.split("/", 4);
             if (parts.length < 4) return;
@@ -81,12 +83,13 @@ public class ResourcePackGenerator {
                 var asset = ModelAsset.fromJson(new String(packResource.readAllBytes(), StandardCharsets.UTF_8));
                 if (asset.parent().isPresent()) {
                     var parentId = asset.parent().get();
-                    var parentAsset = ModelAsset.fromJson(new String(Objects.requireNonNull(builder.getDataOrSource(AssetPaths.model(parentId) + ".json")), StandardCharsets.UTF_8));
-
-                    expanded.put(AssetPaths.model(PolymerPatchBundleMod.MOD_ID, parentId.getPath()) + ".json", new ModelAsset(parentAsset.parent(), parentAsset.elements().map(x -> x.stream()
-                        .map(element -> new ModelElement(element.from().subtract(EXPANSION), element.to().add(EXPANSION),
-                            element.faces(), element.rotation(), element.shade(), element.lightEmission())
-                        ).toList()), parentAsset.textures(), parentAsset.display(), parentAsset.guiLight(), parentAsset.ambientOcclusion()).toBytes());
+                    expanded.put(AssetPaths.model(PolymerPatchBundleMod.MOD_ID, parentId.getPath()) + ".json", expandedParents.computeIfAbsent(parentId, key -> {
+                        var parentAsset = ModelAsset.fromJson(new String(Objects.requireNonNull(builder.getDataOrSource(AssetPaths.model(key) + ".json")), StandardCharsets.UTF_8));
+                        return new ModelAsset(parentAsset.parent(), parentAsset.elements().map(x -> x.stream()
+                            .map(element -> new ModelElement(element.from().subtract(EXPANSION), element.to().add(EXPANSION),
+                                element.faces(), element.rotation(), element.shade(), element.lightEmission())
+                            ).toList()), parentAsset.textures(), parentAsset.display(), parentAsset.guiLight(), parentAsset.ambientOcclusion()).toBytes();
+                    }));
                     if (asset.elements().isPresent()) {
                         expanded.put(string, new ModelAsset(asset.parent(), asset.elements().map(x -> x.stream()
                             .map(element -> new ModelElement(element.from().subtract(EXPANSION), element.to().add(EXPANSION),
