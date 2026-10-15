@@ -18,7 +18,7 @@ public abstract class BlockMixin {
         at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/Block;spawnDestroyParticles(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)V")
     )
     private void ppb$skipPredictedBreakEffects(Block block, Level level, Player player, BlockPos pos, BlockState state, Operation<Void> original) {
-        PredictedBreakEffects predicted = PredictedBreakEffects.of(level, player, pos, state);
+        PredictedBreakEffects predicted = PredictedBreakEffects.of(player, pos, state);
         if (predicted == null) {
             original.call(block, level, player, pos, state);
         } else {
