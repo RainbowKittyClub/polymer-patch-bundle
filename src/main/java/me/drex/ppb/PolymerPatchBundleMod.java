@@ -58,6 +58,7 @@ public class PolymerPatchBundleMod implements ModInitializer {
         ColorProviderRegistry.init();
         // Textured full blocks are note block states, so clients play wood sounds for all of them;
         // the server sends each block's real sounds instead
+        // Covers every wood-sound block, vanilla's too: a player hears their own a round trip late, and client sound mods lose them
         SoundPatcher.convertIntoServerSound(SoundType.WOOD);
 
         for (String modNamespace : MOD_NAMESPACES) {
