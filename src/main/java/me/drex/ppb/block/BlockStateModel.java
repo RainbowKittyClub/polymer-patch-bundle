@@ -13,6 +13,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomModelData;
 import net.minecraft.world.item.component.MapItemColor;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
@@ -102,6 +103,14 @@ public class BlockStateModel extends BlockModel {
         if (color != -1) {
             ItemStack item = element.getItem().copy();
             item.set(DataComponents.MAP_COLOR, new MapItemColor(color));
+            // 26.3 clients tint from custom_model_data colours only; setting them on this copy spares
+            // a 26.3 compat layer copying the stack again
+            CustomModelData data = item.get(DataComponents.CUSTOM_MODEL_DATA);
+            if (data == null || data.colors().isEmpty()) {
+                item.set(DataComponents.CUSTOM_MODEL_DATA, data == null
+                    ? new CustomModelData(List.of(), List.of(), List.of(), List.of(color))
+                    : new CustomModelData(data.floats(), data.flags(), data.strings(), List.of(color)));
+            }
             element.setItem(item);
         }
 
