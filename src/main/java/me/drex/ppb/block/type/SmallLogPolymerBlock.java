@@ -3,18 +3,15 @@ package me.drex.ppb.block.type;
 import com.terraformersmc.terraform.wood.api.block.SmallLogBlock;
 import eu.pb4.factorytools.api.block.FactoryBlock;
 import eu.pb4.factorytools.api.block.model.generic.BSMMParticleBlock;
-import eu.pb4.polymer.blocks.api.BlockModelType;
 import eu.pb4.polymer.blocks.api.PolymerBlockModel;
-import eu.pb4.polymer.blocks.api.PolymerBlockResourceUtils;
 import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.AssetPaths;
 import eu.pb4.polymer.resourcepack.api.PackResource;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
-import eu.pb4.polymer.resourcepack.extras.api.format.blockstate.StateModelVariant;
 import eu.pb4.polymer.resourcepack.extras.api.format.model.ModelAsset;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import me.drex.ppb.PolymerPatchBundleMod;
-import me.drex.ppb.block.ClusteredCarriers;
+import me.drex.ppb.block.Carriers;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -182,9 +179,8 @@ public record SmallLogPolymerBlock(
             ModelAsset modelAsset = new ModelAsset(Optional.of(Identifier.withDefaultNamespace("block/cube_column")), Optional.empty(), textures);
             Identifier modelId = id.withPrefix("block/").withSuffix("_cube_column");
             MODELS.put(modelId, modelAsset);
-            ClusteredCarriers.defineModel(modelId.toString(), "minecraft:block/cube_column", textureNames(textures));
-            BlockState state = ClusteredCarriers.requestOrNormal(List.of(new StateModelVariant(modelId, 0, 0, false, 1)),
-                new PolymerBlockModel[]{new PolymerBlockModel(modelId, 0, 0, false, 1)});
+            Carriers.defineModel(modelId, modelAsset);
+            BlockState state = Carriers.request(id, "axis=y", "", new PolymerBlockModel(modelId, 0, 0, false, 1));
             clientBlock.put(Direction.Axis.Y, state);
         }
 
@@ -193,21 +189,13 @@ public record SmallLogPolymerBlock(
                 ModelAsset modelAsset = new ModelAsset(Optional.of(Identifier.withDefaultNamespace("block/cube_column_horizontal")), Optional.empty(), textures);
                 Identifier modelId = id.withPrefix("block/").withSuffix("_cube_column_horizontal");
                 MODELS.put(modelId, modelAsset);
-                ClusteredCarriers.defineModel(modelId.toString(), "minecraft:block/cube_column_horizontal", textureNames(textures));
-                int y = axis == Direction.Axis.X ? 90 : 0;
-                BlockState state = ClusteredCarriers.requestOrNormal(List.of(new StateModelVariant(modelId, 90, y, false, 1)),
-                    new PolymerBlockModel[]{new PolymerBlockModel(modelId, 90, y, false, 1)});
+                Carriers.defineModel(modelId, modelAsset);
+                BlockState state = Carriers.request(id, "axis=" + axis.getSerializedName(), "", new PolymerBlockModel(modelId, 90, axis == Direction.Axis.X ? 90 : 0, false, 1));
                 clientBlock.put(axis, state);
             }
         }
 
         return new SmallLogPolymerBlock(clientBlock);
-    }
-
-    private static Map<String, String> textureNames(Map<String, ModelAsset.TextureSlot> textures) {
-        var out = new HashMap<String, String>();
-        textures.forEach((key, slot) -> out.put(key, ((ModelAsset.TextureValue) slot).sprite().toString()));
-        return out;
     }
 
     @Override
