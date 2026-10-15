@@ -5,15 +5,13 @@ import eu.pb4.factorytools.api.block.model.generic.BSMMParticleBlock;
 import eu.pb4.factorytools.api.block.FactoryBlock;
 import eu.pb4.factorytools.api.block.model.generic.BlockStateModelManager;
 import eu.pb4.polymer.blocks.api.BlockModelType;
-import eu.pb4.polymer.blocks.api.PolymerBlockModel;
-import eu.pb4.polymer.blocks.api.PolymerBlockResourceUtils;
 import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.extras.api.format.blockstate.BlockStateAsset;
 import eu.pb4.polymer.resourcepack.extras.api.format.blockstate.StateModelVariant;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import me.drex.ppb.PolymerPatchBundleMod;
-import me.drex.ppb.block.ClusteredCarriers;
-import me.drex.ppb.block.StableCarriers;
+import me.drex.ppb.block.Carriers;
+import me.drex.ppb.block.PolymerBlockHelper;
 import me.drex.ppb.res.ResourceHelper;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.core.BlockPos;
@@ -56,26 +54,18 @@ public record StatePolymerBlock(Map<BlockState, BlockState> map,
             // Stable slots first, so a state sharing its models with one never takes a normal state
             if (type == BlockModelType.FULL_BLOCK) {
                 for (var state : block.getStateDefinition().getPossibleStates()) {
-                    for (var pair : list) {
-                        if (pair.getFirst().test(state) && canUseBlock.test(state)) {
-                            if (!cache.containsKey(pair.getSecond())) {
-                                var stable = StableCarriers.request(id, state, toModels(pair.getSecond()));
-                                if (stable != null) {
-                                    cache.put(pair.getSecond(), stable);
-                                }
-                            }
-                            break;
-                        }
+                    var properties = Carriers.properties(state);
+                    var variants = Carriers.holdsStableSlot(id, properties) ? match(list, state, canUseBlock) : null;
+                    if (variants != null) {
+                        cache.computeIfAbsent(variants, c -> PolymerBlockHelper.requestBlock(type, id, properties, c));
                     }
                 }
             }
 
             for (var state : block.getStateDefinition().getPossibleStates()) {
-                for (var pair : list) {
-                    if (pair.getFirst().test(state) && canUseBlock.test(state)) {
-                        map.put(state, cache.computeIfAbsent(pair.getSecond(), c -> request(type, c)));
-                        break;
-                    }
+                var variants = match(list, state, canUseBlock);
+                if (variants != null) {
+                    map.put(state, cache.computeIfAbsent(variants, c -> PolymerBlockHelper.requestBlock(type, id, Carriers.properties(state), c)));
                 }
             }
             PolymerPatchBundleMod.LOGGER.debug("{} uses block states {} from {}", id, cache.size(), type);
@@ -86,19 +76,17 @@ public record StatePolymerBlock(Map<BlockState, BlockState> map,
         }
     }
 
-    private static PolymerBlockModel[] toModels(List<StateModelVariant> variants) {
-        return variants.stream().map(x -> new PolymerBlockModel(x.model(), x.x(), x.y(), x.uvlock(), x.weigth())).toArray(PolymerBlockModel[]::new);
-    }
-
-    private static @Nullable BlockState request(BlockModelType type, List<StateModelVariant> variants) {
-        var model = toModels(variants);
-        if (type == BlockModelType.FULL_BLOCK) {
-            var clustered = ClusteredCarriers.request(variants, model);
-            if (clustered != null) {
-                return clustered;
+    // The models of the first variant matching this state, or null when it has none or can't use one
+    private static @Nullable List<StateModelVariant> match(List<Pair<BlockStatePredicate, List<StateModelVariant>>> list, BlockState state, Predicate<BlockState> canUseBlock) {
+        if (!canUseBlock.test(state)) {
+            return null;
+        }
+        for (var pair : list) {
+            if (pair.getFirst().test(state)) {
+                return pair.getSecond();
             }
         }
-        return PolymerBlockResourceUtils.requestBlock(type, model);
+        return null;
     }
 
     @Override

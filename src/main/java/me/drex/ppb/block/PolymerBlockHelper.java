@@ -7,6 +7,7 @@ import eu.pb4.polymer.blocks.api.PolymerBlockResourceUtils;
 import eu.pb4.polymer.common.api.PolymerCommonUtils;
 import eu.pb4.polymer.core.api.block.PolymerBlock;
 import eu.pb4.polymer.resourcepack.extras.api.format.blockstate.BlockStateAsset;
+import eu.pb4.polymer.resourcepack.extras.api.format.blockstate.StateModelVariant;
 import eu.pb4.polymer.virtualentity.api.BlockWithElementHolder;
 import me.drex.ppb.PolymerPatchBundleMod;
 import me.drex.ppb.block.mod.*;
@@ -18,8 +19,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -118,12 +121,16 @@ public class PolymerBlockHelper {
 
     public static BlockState requestPolymerBlockState(Identifier id, String variant, BlockModelType blockModelType) throws IOException {
         BlockStateAsset blockStateAsset = ResourceHelper.decodeBlockState(id);
+        return requestBlock(blockModelType, id, variant, blockStateAsset.variants().get().get(variant));
+    }
 
-        var model = blockStateAsset.variants().get().get(variant);
-        var models = model.stream().map(x -> new PolymerBlockModel(x.model(), x.x(), x.y(), x.uvlock(), x.weigth())).toArray(PolymerBlockModel[]::new);
-
-        return blockModelType == BlockModelType.FULL_BLOCK
-            ? ClusteredCarriers.requestOrNormal(model, models)
-            : PolymerBlockResourceUtils.requestBlock(blockModelType, models);
+    /**
+     * A state drawn with these variants; full blocks go through {@link Carriers}.
+     */
+    public static @Nullable BlockState requestBlock(BlockModelType type, Identifier id, String properties, List<StateModelVariant> variants) {
+        var models = variants.stream().map(x -> new PolymerBlockModel(x.model(), x.x(), x.y(), x.uvlock(), x.weigth())).toArray(PolymerBlockModel[]::new);
+        return type == BlockModelType.FULL_BLOCK
+            ? Carriers.request(id, properties, "", models)
+            : PolymerBlockResourceUtils.requestBlock(type, models);
     }
 }
