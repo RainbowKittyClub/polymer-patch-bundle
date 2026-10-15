@@ -1,10 +1,12 @@
 package me.drex.ppb.block;
 
 import eu.pb4.factorytools.api.block.CustomBreakingParticleBlock;
+import eu.pb4.factorytools.api.block.model.generic.BSMMParticleBlock;
+import eu.pb4.polymer.blocks.impl.BlockExtBlockMapper;
 import eu.pb4.polymer.core.api.block.PolymerBlockUtils;
 import eu.pb4.polymer.core.api.utils.PolymerSyncedObject;
 import eu.pb4.polymer.soundpatcher.impl.SoundRemapperImpl;
-import me.drex.ppb.block.type.StatePolymerBlock;
+import eu.pb4.polymer.virtualentity.api.attachment.BlockBoundAttachment;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
@@ -35,10 +37,11 @@ public record PredictedBreakEffects(ServerPlayer player, boolean sound, boolean 
 
         BlockState clientState = PolymerBlockUtils.getPolymerBlockState(state, serverPlayer.connection.getPacketContext());
         // The client played its own block's break sound (unless the sound patcher mutes it), and particles of
-        // its model; a textured state uses this block's model
+        // its model: this block's, for a Polymer textured state no display draws over (unlike an empty one)
         SoundEvent clientSound = clientState.getSoundType().getBreakSound();
         boolean sound = clientSound == state.getSoundType().getBreakSound() && !SoundRemapperImpl.ignoreExceptions(clientSound);
-        boolean particles = block instanceof StatePolymerBlock statePolymerBlock && statePolymerBlock.isTextured(state);
+        boolean particles = block instanceof BSMMParticleBlock && BlockExtBlockMapper.INSTANCE.stateMap.containsKey(clientState)
+            && BlockBoundAttachment.get(serverPlayer.level(), pos) == null;
         return sound || particles ? new PredictedBreakEffects(serverPlayer, sound, particles) : null;
     }
 
