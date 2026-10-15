@@ -28,7 +28,7 @@ import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.phys.BlockHitResult;
 
 public record SlabPolymerBlock(BlockState bottomState,
-                               BlockState bottomStateWaterlogged) implements FactoryBlock, PolymerTexturedBlock, BSMMParticleBlock {
+                               BlockState bottomStateWaterlogged) implements FactoryBlock, PolymerTexturedBlock, BSMMParticleBlock, TexturedStates {
 
     private static final BlockState[] EMPTY_STATES = new BlockState[4];
 
@@ -51,6 +51,12 @@ public record SlabPolymerBlock(BlockState bottomState,
             PolymerPatchBundleMod.LOGGER.error("Failed to handle slab block {}", id, e);
             return null;
         }
+    }
+
+    @Override
+    public boolean isTextured(BlockState state) {
+        return state.getValue(SlabBlock.TYPE) == SlabType.BOTTOM
+            && (state.getValue(SlabBlock.WATERLOGGED) ? bottomStateWaterlogged : bottomState) != null;
     }
 
     @Override

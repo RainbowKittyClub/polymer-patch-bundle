@@ -30,7 +30,7 @@ import java.util.*;
 import java.util.function.Predicate;
 
 public record StatePolymerBlock(Map<BlockState, BlockState> map,
-                                FactoryBlock fallback) implements FactoryBlock, PolymerTexturedBlock, BSMMParticleBlock {
+                                FactoryBlock fallback) implements FactoryBlock, PolymerTexturedBlock, BSMMParticleBlock, TexturedStates {
 
     public static StatePolymerBlock of(Identifier id, Block block, BlockModelType type) {
         return of(id, block, type, BaseFactoryBlock.BARRIER);
@@ -101,8 +101,9 @@ public record StatePolymerBlock(Map<BlockState, BlockState> map,
     }
 
     // True when the client gets a real textured state for this state, here or in a nested fallback.
+    @Override
     public boolean isTextured(BlockState blockState) {
-        return map.get(blockState) != null || (fallback instanceof StatePolymerBlock statePolymerBlock && statePolymerBlock.isTextured(blockState));
+        return map.get(blockState) != null || (fallback instanceof TexturedStates textured && textured.isTextured(blockState));
     }
 
     @Override
