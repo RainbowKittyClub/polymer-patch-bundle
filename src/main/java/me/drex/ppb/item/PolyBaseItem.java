@@ -2,6 +2,7 @@ package me.drex.ppb.item;
 
 import eu.pb4.polymer.core.api.item.PolymerItem;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -14,9 +15,20 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 
 public record PolyBaseItem(Item item) implements PolymerItem {
+    // A block item takes RKC Polymer's stand-in policy when present; anything else, or stock Polymer, the trial key.
     @Override
     public Item getPolymerItem(ItemStack itemStack, PacketContext packetContext) {
+        if (item instanceof BlockItem blockItem && StandInItems.available()) {
+            return StandInItems.item(blockItem, packetContext);
+        }
         return Items.TRIAL_KEY;
+    }
+
+    @Override
+    public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context, HolderLookup.Provider lookup) {
+        if (item instanceof BlockItem blockItem) {
+            StandInItems.pin(out, blockItem, context);
+        }
     }
 
     @Override
@@ -26,6 +38,7 @@ public record PolyBaseItem(Item item) implements PolymerItem {
 
     @Override
     public boolean isIgnoringBlockInteractionPlaySoundExceptedEntity(BlockState state, ServerPlayer player, InteractionHand hand, ItemStack stack, ServerLevel world, BlockHitResult blockHitResult) {
-        return item instanceof BlockItem;
+        // With the policy the place sound follows the client item; the lift would double every other sound.
+        return item instanceof BlockItem && !StandInItems.available();
     }
 }
