@@ -24,7 +24,7 @@ public abstract class ServerLevelMixin {
     }
 
     @WrapOperation(
-        method = "sendParticles(Lnet/minecraft/core/particles/ParticleOptions;ZZDDDIDDDD)I",
+        method = "sendParticles(Lnet/minecraft/core/particles/ParticleOptions;ZZDDDIDDDDDDLnet/minecraft/network/protocol/game/ClientboundLevelParticlesPacket$RandomizationType;)I",
         at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;sendParticles(Lnet/minecraft/server/level/ServerPlayer;ZDDDLnet/minecraft/network/protocol/Packet;)Z")
     )
     private boolean ppb$skipPredictedBreakParticles(ServerLevel level, ServerPlayer player, boolean overrideLimiter, double x, double y, double z, Packet<?> packet, Operation<Boolean> original) {
