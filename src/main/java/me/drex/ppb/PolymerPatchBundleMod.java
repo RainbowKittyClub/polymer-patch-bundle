@@ -7,7 +7,7 @@ import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.polymer.resourcepack.extras.api.ResourcePackExtras;
 import eu.pb4.polymer.resourcepack.extras.api.format.item.ItemAsset;
 import eu.pb4.polymer.resourcepack.extras.api.format.item.model.BasicItemModel;
-import eu.pb4.polymer.resourcepack.extras.api.format.item.tint.MapColorTintSource;
+import eu.pb4.polymer.resourcepack.extras.api.format.item.tint.CustomModelDataTintSource;
 import eu.pb4.polymer.soundpatcher.api.SoundPatcher;
 import eu.pb4.polymer.virtualentity.api.attachment.BlockAwareAttachment;
 import eu.pb4.polymer.virtualentity.impl.HolderHolder;
@@ -99,7 +99,7 @@ public class PolymerPatchBundleMod implements ModInitializer {
         ResourcePackExtras.forDefault().addBridgedModelsFolder(
             Identifier.fromNamespaceAndPath(modid, "block"),
             (id, resourcePackBuilder) -> {
-                return new ItemAsset(new BasicItemModel(id, List.of(new MapColorTintSource(0xFFFFFF))), ItemAsset.Properties.DEFAULT);
+                return new ItemAsset(new BasicItemModel(id, List.of(new CustomModelDataTintSource(0, 0xFFFFFF))), ItemAsset.Properties.DEFAULT);
             }
         );
     }
