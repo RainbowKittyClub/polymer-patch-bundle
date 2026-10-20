@@ -24,9 +24,9 @@ public class PPBMixinPlugin implements IMixinConfigPlugin {
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
         var name = mixinClassName.substring(PACKAGE.length());
-        String subPackage = name.split("\\.", 1)[0];
+        String subPackage = name.split("\\.", 2)[0];
         return switch (subPackage) {
-            case "terraform" -> FabricLoader.getInstance().isModLoaded("terraform-wood-api");
+            case "terraform" -> FabricLoader.getInstance().isModLoaded("terraform-wood-api-v1");
             case "blockus" -> FabricLoader.getInstance().isModLoaded("blockus");
             default -> true;
         };
