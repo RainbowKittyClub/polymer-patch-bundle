@@ -15,10 +15,6 @@ repositories {
 	maven { url "https://api.modrinth.com/maven/" }
 	maven { url 'https://maven.nucleoid.xyz/releases' }
 	maven { url 'https://maven.terraformersmc.com/' }
-	maven {
-		url "https://maven.theepicblock.nl"
-		content { includeGroup("nl.theepicblock") }
-	}
     maven { url 'https://jitpack.io' }
 	mavenLocal()
 }
@@ -47,7 +43,6 @@ dependencies {
 
 
 	implementation include("eu.pb4:factorytools:${project.factorytools_version}")
-	implementation include("nl.theepicblock:resource-locator-api:${project.resource_locator_version}")
     implementation include("com.github.ramixin:mixson-fabric:2.1.0")
 
 	implementation "eu.pb4:polymer-core:${project.polymer_version}"

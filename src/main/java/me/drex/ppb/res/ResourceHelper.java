@@ -9,52 +9,68 @@ import eu.pb4.polymer.resourcepack.api.ResourcePackBuilder;
 import eu.pb4.polymer.resourcepack.extras.api.format.blockstate.BlockStateAsset;
 import eu.pb4.polymer.resourcepack.extras.api.format.model.ModelAsset;
 import me.drex.ppb.PolymerPatchBundleMod;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.IoSupplier;
-import nl.theepicblock.resourcelocatorapi.ResourceLocatorApi;
-import nl.theepicblock.resourcelocatorapi.api.AssetContainer;
-import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 
 public class ResourceHelper {
-    public static final AssetContainer GLOBAL_ASSETS = ResourceLocatorApi.createGlobalAssetContainer();
-    private static final FileSystem vanillaFilesystem;
-
-    static {
-        try {
-            vanillaFilesystem = FileSystems.newFileSystem(PolymerCommonUtils.getClientJar());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    // The assets folder of every loaded mod, nested ones included, in mod id order
+    private static final List<Path> MOD_ASSETS = FabricLoader.getInstance().getAllMods().stream()
+        .filter(mod -> !mod.getMetadata().getType().equals("builtin"))
+        .sorted(Comparator.comparing(mod -> mod.getMetadata().getId()))
+        .flatMap(mod -> mod.getRootPaths().stream())
+        .map(root -> root.resolve("assets"))
+        .filter(Files::isDirectory)
+        .toList();
+    // The root holding assets/: the client jar's on a server, the right game jar on a (split dev) client.
+    private static final Path vanillaRoot = PolymerCommonUtils.getClientJarRoot();
 
     public static void init(ResourcePackBuilder packBuilder) {
-        GLOBAL_ASSETS.locateFiles("").forEach(tuple -> {
-            Identifier id = tuple.getFirst();
-            if (!PolymerPatchBundleMod.MOD_ASSET_IDS.contains(id.getNamespace())) return;
-            IoSupplier<InputStream> ioSupplier = tuple.getSecond();
-
-            try {
-                byte[] data = IOUtils.toByteArray(ioSupplier.get());
-                packBuilder.addData("assets/" + id.getNamespace() + "/" + id.getPath(), data);
-            } catch (IOException e) {
-                PolymerPatchBundleMod.LOGGER.error("Failed to read resource {}: {}", id, e);
+        Set<String> added = new HashSet<>();
+        for (Path assets : MOD_ASSETS) {
+            for (String namespace : PolymerPatchBundleMod.MOD_ASSET_IDS) {
+                Path namespaceRoot = assets.resolve(namespace);
+                if (!Files.isDirectory(namespaceRoot)) continue;
+                try (Stream<Path> files = Files.walk(namespaceRoot)) {
+                    files.filter(Files::isRegularFile).forEach(file -> {
+                        String path = namespaceRoot.relativize(file).toString().replace(file.getFileSystem().getSeparator(), "/");
+                        // Same as getAsset: the first mod with a file wins
+                        if (!Identifier.isValidPath(path) || !added.add(namespace + ":" + path)) return;
+                        try {
+                            packBuilder.addData("assets/" + namespace + "/" + path, Files.readAllBytes(file));
+                        } catch (IOException e) {
+                            PolymerPatchBundleMod.LOGGER.error("Failed to read resource {}:{}: {}", namespace, path, e);
+                        }
+                    });
+                } catch (IOException e) {
+                    PolymerPatchBundleMod.LOGGER.error("Failed to list resources in {}: {}", namespaceRoot, e);
+                }
             }
-        });
+        }
     }
 
     public static IoSupplier<InputStream> getAsset(String namespace, String path) {
-        IoSupplier<InputStream> supplier = ResourceHelper.GLOBAL_ASSETS.getAsset(namespace, path);
-        if (supplier != null) {
-            return supplier;
+        for (Path assets : MOD_ASSETS) {
+            Path file = assets.resolve(namespace).resolve(path);
+            if (Files.isRegularFile(file)) {
+                return IoSupplier.create(file);
+            }
         }
-        var vanillaPath = vanillaFilesystem.getPath("/assets/" + namespace + "/" + path);
+        if (vanillaRoot == null) {
+            return null;
+        }
+        var vanillaPath = vanillaRoot.resolve("assets/" + namespace + "/" + path);
         if (Files.exists(vanillaPath)) {
             return IoSupplier.create(vanillaPath);
         } else {
