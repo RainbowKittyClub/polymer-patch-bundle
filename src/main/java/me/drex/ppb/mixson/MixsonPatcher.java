@@ -23,7 +23,7 @@ public class MixsonPatcher {
 
     public static void setup() {
         PolymerResourcePackUtils.RESOURCE_PACK_CREATION_EVENT.register(builder -> {
-            var pack = new VanillaPackResourcesBuilder().build(INFO);
+            var pack = new VanillaPackResourcesBuilder().build(INFO).fullResources();
 
             Map<Identifier, Resource> attachedResources = new HashMap<>();
             PathPackResources.listPath(Identifier.DEFAULT_NAMESPACE, PolymerCommonUtils.getClientJarRoot().resolve("assets").resolve(Identifier.DEFAULT_NAMESPACE), List.of(), (identifier, ioSupplier) -> {
