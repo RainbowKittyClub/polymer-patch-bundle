@@ -15,14 +15,22 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Set;
+
 public class TerrestriaPolymerBlockHelper implements ModPolymerBlockHelper {
     public static final TerrestriaPolymerBlockHelper INSTANCE = new TerrestriaPolymerBlockHelper();
+    // Leaves whose textures are already coloured; a foliage-tinted carrier turns them green
+    private static final Set<String> UNTINTED_LEAVES = Set.of("sakura_leaves", "yucca_palm_leaves",
+        "japanese_maple_leaves", "dark_japanese_maple_leaves", "jungle_palm_leaves");
 
     @Override
     public @Nullable PolymerBlock requestPolymerBlock(Identifier id, Block block) {
         PolymerBlock polymerBlock = TerraformPolymerBlockHelper.INSTANCE.requestPolymerBlock(id, block);
         if (polymerBlock != null) return polymerBlock;
 
+        if (UNTINTED_LEAVES.contains(id.getPath())) {
+            return StatePolymerBlock.of(id, block, BlockModelType.LEAVES);
+        }
         return switch (block) {
             case SaguaroCactusBlock ignored -> BaseFactoryBlock.CACTUS;
             case BasaltGrassBlock ignored -> StatePolymerBlock.of(id, block, BlockModelType.BIOME_COLORED_LEAVES, StatePolymerBlock.of(id, block, BlockModelType.FULL_BLOCK), state -> !state.getValue(BlockStateProperties.SNOWY));
