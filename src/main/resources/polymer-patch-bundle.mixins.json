@@ -4,10 +4,13 @@
 	"plugin": "me.drex.ppb.util.PPBMixinPlugin",
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
+		"AbstractBoatAccessor",
 		"BlockMixin",
 		"BlockStateBaseAccessor",
+		"MobAccessor",
 		"RegistryMixin",
 		"ServerLevelMixin",
+		"VehicleEntityAccessor",
 		"blockus.BlockusItemsMixin",
 		"terraform.BareSmallLogBlockMixin",
 		"terraform.TerraformBoatItemHelperImplMixin"

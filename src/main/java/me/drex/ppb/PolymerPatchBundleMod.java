@@ -15,6 +15,8 @@ import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import me.drex.ppb.color.ColorProviderRegistry;
 import me.drex.ppb.color.ColorMapHelper;
+import me.drex.ppb.entity.BoatShells;
+import me.drex.ppb.entity.PolyBoatEntity;
 import me.drex.ppb.mixson.CinderscapesArmorTrimItemModels;
 import me.drex.ppb.mixson.MixsonPatcher;
 import me.drex.ppb.res.ResourceHelper;
@@ -22,6 +24,7 @@ import me.drex.ppb.res.ResourcePackGenerator;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -50,6 +53,8 @@ public class PolymerPatchBundleMod implements ModInitializer {
     public void onInitialize() {
         PolymerResourcePackUtils.RESOURCE_PACK_CREATION_EVENT.register(ResourceHelper::init);
         ResourcePackGenerator.setup();
+        PolymerResourcePackUtils.RESOURCE_PACK_AFTER_INITIAL_CREATION_EVENT.register(BoatShells::addAssets);
+        ServerLifecycleEvents.SERVER_STARTING.register(server -> PolyBoatEntity.warmTrackedData());
         MixsonPatcher.setup();
         if (FabricLoader.getInstance().isModLoaded("cinderscapes")) {
             CinderscapesArmorTrimItemModels.init();

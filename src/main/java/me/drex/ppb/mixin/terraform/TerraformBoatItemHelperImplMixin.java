@@ -2,8 +2,7 @@ package me.drex.ppb.mixin.terraform;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import com.terraformersmc.terraform.boat.impl.item.TerraformBoatItemHelperImpl;
-import eu.pb4.polymer.core.api.entity.PolymerEntityUtils;
-import me.drex.ppb.entity.PolyBaseEntity;
+import me.drex.ppb.entity.PolyBoatEntity;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
@@ -28,7 +27,6 @@ public abstract class TerraformBoatItemHelperImplMixin {
         BiConsumer<Identifier, EntityType<T>> registry, CallbackInfoReturnable<BoatItem> cir,
         @Local(name = "entityType") EntityType<?> entityType, @Local(name = "item") BoatItem item
     ) {
-        Identifier location = entityTypeKey.identifier();
-        PolymerEntityUtils.registerOverlay(entityType, object -> PolyBaseEntity.createBoat(location));
+        PolyBoatEntity.register(entityType, entityTypeKey.identifier());
     }
 }
