@@ -10,7 +10,9 @@ import me.drex.ppb.block.type.BaseFactoryBlock;
 import me.drex.ppb.block.type.StatePolymerBlock;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import org.jetbrains.annotations.Nullable;
 
 public class TerrestriaPolymerBlockHelper implements ModPolymerBlockHelper {
@@ -25,8 +27,15 @@ public class TerrestriaPolymerBlockHelper implements ModPolymerBlockHelper {
             case SaguaroCactusBlock ignored -> BaseFactoryBlock.CACTUS;
             case BasaltGrassBlock ignored -> StatePolymerBlock.of(id, block, BlockModelType.BIOME_COLORED_LEAVES, StatePolymerBlock.of(id, block, BlockModelType.FULL_BLOCK), state -> !state.getValue(BlockStateProperties.SNOWY));
             case CattailBlock ignored -> StatePolymerBlock.of(id, block, BlockModelType.KELP);
-            case TallCattailBlock ignored -> StatePolymerBlock.of(id, block, BlockModelType.KELP);
+            // Clients fill kelp with water, and the upper half stands above it
+            case TallCattailBlock ignored -> StatePolymerBlock.of(id, block, BlockModelType.KELP,
+                StatePolymerBlock.of(id, block, BlockModelType.PLANT, BaseFactoryBlock.PLANT, TerrestriaPolymerBlockHelper::isUpperHalf),
+                state -> !isUpperHalf(state));
             default -> null;
         };
+    }
+
+    private static boolean isUpperHalf(BlockState state) {
+        return state.getValue(BlockStateProperties.DOUBLE_BLOCK_HALF) == DoubleBlockHalf.UPPER;
     }
 }
