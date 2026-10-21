@@ -6,14 +6,18 @@ import eu.pb4.factorytools.api.virtualentity.BlockModel;
 import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import me.drex.ppb.block.BlockStateModel;
+import me.drex.ppb.res.VanillaWoods;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SignBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
@@ -22,10 +26,14 @@ import java.util.function.BiFunction;
 
 public record StateCopyFactoryBlock(Block clientBlock,
                                     BiFunction<BlockState, BlockPos, BlockModel> modelFunction) implements FactoryBlock, PolymerTexturedBlock, BSMMParticleBlock {
-    public static final StateCopyFactoryBlock SIGN = new StateCopyFactoryBlock(Blocks.BIRCH_SIGN, (state, blockPos) -> BlockStateModel.midRange().shifty());
-    public static final StateCopyFactoryBlock WALL_SIGN = new StateCopyFactoryBlock(Blocks.BIRCH_WALL_SIGN, (state, blockPos) -> BlockStateModel.midRange().shifty());
-    public static final StateCopyFactoryBlock HANGING_SIGN = new StateCopyFactoryBlock(Blocks.BIRCH_HANGING_SIGN, (state, blockPos) -> BlockStateModel.midRange().shifty());
-    public static final StateCopyFactoryBlock HANGING_WALL_SIGN = new StateCopyFactoryBlock(Blocks.BIRCH_WALL_HANGING_SIGN, (state, blockPos) -> BlockStateModel.midRange().shifty());
+
+    // A modded sign shows as the vanilla <wood>_<kind> nearest its look, which the client's sign editor draws
+    public static StateCopyFactoryBlock sign(SignBlock sign, String kind) {
+        String wood = VanillaWoods.nearest(Identifier.parse(sign.type().name()));
+        Block clientBlock = BuiltInRegistries.BLOCK.getOptional(Identifier.withDefaultNamespace(wood + "_" + kind))
+            .orElseGet(() -> BuiltInRegistries.BLOCK.getValue(Identifier.withDefaultNamespace("birch_" + kind)));
+        return new StateCopyFactoryBlock(clientBlock, (state, blockPos) -> BlockStateModel.midRange().shifty());
+    }
 
     public static final StateCopyFactoryBlock WALL = new StateCopyFactoryBlock(Blocks.SANDSTONE_WALL, (state, blockPos) -> BlockStateModel.midRange().shifty());
     public static final StateCopyFactoryBlock STAIR = new StateCopyFactoryBlock(Blocks.SANDSTONE_STAIRS, (state, blockPos) -> BlockStateModel.midRange().shifty());

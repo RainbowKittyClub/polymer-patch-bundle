@@ -29,6 +29,6 @@ public abstract class TerraformBoatItemHelperImplMixin {
         @Local(name = "entityType") EntityType<?> entityType, @Local(name = "item") BoatItem item
     ) {
         Identifier location = entityTypeKey.identifier();
-        PolymerEntityUtils.registerOverlay(entityType, object -> PolyBaseEntity.createBoat(location.getPath()));
+        PolymerEntityUtils.registerOverlay(entityType, object -> PolyBaseEntity.createBoat(location));
     }
 }

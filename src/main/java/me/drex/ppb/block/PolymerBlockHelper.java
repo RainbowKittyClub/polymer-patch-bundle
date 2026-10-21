@@ -81,10 +81,10 @@ public class PolymerBlockHelper {
             case BasePressurePlateBlock ignored -> ResourcePackGenerator.expandBlockModel(id, StateCopyFactoryBlock.PRESSURE_PLATE);
             case CarpetBlock ignored -> ResourcePackGenerator.expandBlockModel(id, StateCopyFactoryBlock.CARPET);
             case ShelfBlock ignored -> ResourcePackGenerator.expandBlockModel(id, StateCopyFactoryBlock.SHELF);
-            case WallSignBlock ignored -> ResourcePackGenerator.expandBlockModel(id, StateCopyFactoryBlock.WALL_SIGN);
-            case WallHangingSignBlock ignored -> ResourcePackGenerator.expandBlockModel(id, StateCopyFactoryBlock.HANGING_WALL_SIGN);
-            case CeilingHangingSignBlock ignored -> ResourcePackGenerator.expandBlockModel(id, StateCopyFactoryBlock.HANGING_SIGN);
-            case StandingSignBlock ignored -> ResourcePackGenerator.expandBlockModel(id, StateCopyFactoryBlock.SIGN);
+            case WallSignBlock sign -> ResourcePackGenerator.expandBlockModel(id, StateCopyFactoryBlock.sign(sign, "wall_sign"));
+            case WallHangingSignBlock sign -> ResourcePackGenerator.expandBlockModel(id, StateCopyFactoryBlock.sign(sign, "wall_hanging_sign"));
+            case CeilingHangingSignBlock sign -> ResourcePackGenerator.expandBlockModel(id, StateCopyFactoryBlock.sign(sign, "hanging_sign"));
+            case StandingSignBlock sign -> ResourcePackGenerator.expandBlockModel(id, StateCopyFactoryBlock.sign(sign, "sign"));
             case DoorBlock ignored -> DoorPolymerBlock.INSTANCE;
             case IronBarsBlock ignored -> BarsPolymerBlock.INSTANCE;
             case ChainBlock ignored -> ChainPolymerBlock.INSTANCE;
