@@ -12,6 +12,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.SignBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
@@ -37,11 +38,12 @@ public record PredictedBreakEffects(ServerPlayer player, boolean sound, boolean 
 
         BlockState clientState = PolymerBlockUtils.getPolymerBlockState(state, serverPlayer.connection.getPacketContext());
         // The client played its own block's break sound (unless the sound patcher mutes it), and particles of
-        // its model: this block's, for a Polymer textured state no display draws over (unlike an empty one)
+        // its model: this block's, for a Polymer textured state no display draws over (unlike an empty one),
+        // or the nearest vanilla wood's, for a sign stand-in
         SoundEvent clientSound = clientState.getSoundType().getBreakSound();
         boolean sound = clientSound == state.getSoundType().getBreakSound() && !SoundRemapperImpl.ignoreExceptions(clientSound);
-        boolean particles = block instanceof BSMMParticleBlock && BlockExtBlockMapper.INSTANCE.stateMap.containsKey(clientState)
-            && BlockBoundAttachment.get(serverPlayer.level(), pos) == null;
+        boolean particles = block instanceof BSMMParticleBlock && (clientState.getBlock() instanceof SignBlock
+            || BlockExtBlockMapper.INSTANCE.stateMap.containsKey(clientState) && BlockBoundAttachment.get(serverPlayer.level(), pos) == null);
         return sound || particles ? new PredictedBreakEffects(serverPlayer, sound, particles) : null;
     }
 
