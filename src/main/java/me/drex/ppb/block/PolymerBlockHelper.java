@@ -49,6 +49,7 @@ public class PolymerBlockHelper {
         PolymerBlock.registerOverlay(block, polymerBlock);
         if (polymerBlock instanceof BlockWithElementHolder blockWithElementHolder) {
             BlockWithElementHolder.registerOverlay(block, blockWithElementHolder);
+            MiningCracks.register(id);
         }
     }
 

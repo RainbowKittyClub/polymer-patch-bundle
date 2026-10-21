@@ -25,7 +25,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.function.BiFunction;
 
 public record StateCopyFactoryBlock(Block clientBlock,
-                                    BiFunction<BlockState, BlockPos, BlockModel> modelFunction) implements FactoryBlock, PolymerTexturedBlock, BSMMParticleBlock {
+                                    BiFunction<BlockState, BlockPos, BlockModel> modelFunction) implements FactoryBlock, DisplayCracks, PolymerTexturedBlock, BSMMParticleBlock {
 
     // A modded sign shows as the vanilla <wood>_<kind> nearest its look, which the client's sign editor draws
     public static StateCopyFactoryBlock sign(SignBlock sign, String kind) {

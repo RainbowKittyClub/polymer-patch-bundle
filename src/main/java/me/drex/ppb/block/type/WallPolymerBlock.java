@@ -27,7 +27,7 @@ public record WallPolymerBlock<T extends Comparable<T>>(
     Property<T> north, Property<T> east,
     Property<T> south, Property<T> west,
     Function<T, Boolean> hasWall
-) implements FactoryBlock, PolymerTexturedBlock, BSMMParticleBlock {
+) implements FactoryBlock, DisplayCracks, PolymerTexturedBlock, BSMMParticleBlock {
 
     public static final WallPolymerBlock<WallSide> BARRIER = new WallPolymerBlock<>(
         BlockStateProperties.NORTH_WALL, BlockStateProperties.EAST_WALL,

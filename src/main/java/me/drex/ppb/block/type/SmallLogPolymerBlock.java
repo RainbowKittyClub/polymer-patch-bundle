@@ -34,7 +34,7 @@ import java.io.IOException;
 import java.util.*;
 
 public record SmallLogPolymerBlock(
-    Map<Direction.Axis, BlockState> clientBlock) implements FactoryBlock, PolymerTexturedBlock, BSMMParticleBlock, TexturedStates {
+    Map<Direction.Axis, BlockState> clientBlock) implements FactoryBlock, DisplayCracks, PolymerTexturedBlock, BSMMParticleBlock, TexturedStates {
 
     private static final Map<Identifier, ModelAsset> MODELS = new HashMap<>();
     private static final Set<Identifier> USED_TEXTURES = new HashSet<>();

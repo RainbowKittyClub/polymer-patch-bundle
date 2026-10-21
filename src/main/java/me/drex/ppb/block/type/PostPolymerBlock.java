@@ -19,7 +19,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.NotNull;
 
-public record PostPolymerBlock() implements FactoryBlock, PolymerTexturedBlock, BSMMParticleBlock {
+public record PostPolymerBlock() implements FactoryBlock, DisplayCracks, PolymerTexturedBlock, BSMMParticleBlock {
     private static final BlockState[] EMPTY_STATES = new BlockState[6];
 
     public static final PostPolymerBlock INSTANCE = new PostPolymerBlock();

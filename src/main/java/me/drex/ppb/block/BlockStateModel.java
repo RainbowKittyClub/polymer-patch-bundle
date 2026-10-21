@@ -18,6 +18,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class BlockStateModel extends BlockModel {
@@ -44,6 +45,10 @@ public class BlockStateModel extends BlockModel {
     public BlockStateModel shifty() {
         shifty = true;
         return this;
+    }
+
+    public List<ItemDisplayElement> modelElements() {
+        return Collections.unmodifiableList(this.modelElements);
     }
 
     public void notifyUpdate(HolderAttachment.UpdateType updateType) {
