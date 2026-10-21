@@ -47,6 +47,10 @@ public class PolymerBlockHelper {
         PolymerBlock polymerBlock = requestPolymerBlock(id, block);
         disableDisplayOcclusion(block, polymerBlock);
         PolymerBlock.registerOverlay(block, polymerBlock);
+        // The client's sign editor would draw the stand-in's wood
+        if (block instanceof SignBlock) {
+            SignDialogs.register(block);
+        }
         if (polymerBlock instanceof BlockWithElementHolder blockWithElementHolder) {
             BlockWithElementHolder.registerOverlay(block, blockWithElementHolder);
         }
