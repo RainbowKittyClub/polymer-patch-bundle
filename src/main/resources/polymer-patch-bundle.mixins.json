@@ -10,6 +10,7 @@
 		"ServerLevelMixin",
 		"blockus.BlockusItemsMixin",
 		"terraform.BareSmallLogBlockMixin",
+		"terraform.SmallLogBlockAccessor",
 		"terraform.TerraformBoatItemHelperImplMixin"
 	],
 	"injectors": {
