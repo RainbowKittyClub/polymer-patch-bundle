@@ -11,6 +11,7 @@
 		"blockus.BlockusItemsMixin",
 		"terraform.BareSmallLogBlockMixin",
 		"terraform.SmallLogBlockAccessor",
+		"terraform.SmallLogBlockMixin",
 		"terraform.TerraformBoatItemHelperImplMixin"
 	],
 	"injectors": {
