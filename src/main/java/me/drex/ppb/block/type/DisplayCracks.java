@@ -18,12 +18,13 @@ import java.util.List;
 /**
  * A Polymer block drawn by displays, whose mining cracks follow those displays' models instead of
  * factorytools' full cube, and whose hit particles the server sends when the client's stand-in has none.
- * A state with no display keeps only the client's own cracks.
+ * A state with no display keeps only the client's own cracks, unless its stand-in draws none (a barrier).
  */
 public interface DisplayCracks extends VirtualDestroyStage.Marker, CustomBreakingParticleBlock {
     @Override
     default boolean showCustomMiningStageMarker(BlockState state, BlockPos pos, ServerPlayer player) {
-        return BlockBoundAttachment.get(player.level(), pos) != null;
+        return BlockBoundAttachment.get(player.level(), pos) != null
+            || PolymerBlockUtils.getPolymerBlockState(state, player.connection.getPacketContext()).getRenderShape() == RenderShape.INVISIBLE;
     }
 
     @Override
