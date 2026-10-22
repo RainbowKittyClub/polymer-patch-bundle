@@ -2,9 +2,11 @@ package me.drex.ppb.block;
 
 import com.terraformersmc.terraform.wood.api.block.SmallLogBlock;
 import eu.pb4.factorytools.api.virtualentity.BlockModel;
+import eu.pb4.polymer.virtualentity.api.BlockWithElementHolder;
 import eu.pb4.polymer.virtualentity.api.attachment.BlockAwareAttachment;
 import eu.pb4.polymer.virtualentity.api.attachment.HolderAttachment;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
+import me.drex.ppb.block.type.SmallLogPolymerBlock;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
@@ -26,7 +28,7 @@ import java.util.WeakHashMap;
 public class SmallLogModel extends BlockModel {
     // Weak, so unloaded blocks' holders go with their chunks
     private static final Set<SmallLogModel> LIVE = Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
-    private final Identifier blockId;
+    private Identifier blockId;
     private final DetailedBlocks.Kind kind;
     private final ItemDisplayElement element = new ItemDisplayElement();
 
@@ -55,6 +57,10 @@ public class SmallLogModel extends BlockModel {
                 holder.stopWatching(player.connection);
             }
         }
+    }
+
+    public DetailedBlocks.Kind kind() {
+        return this.kind;
     }
 
     public Identifier blockId() {
@@ -90,6 +96,10 @@ public class SmallLogModel extends BlockModel {
 
     private void update() {
         BlockState state = this.blockState();
+        // A holder kept across a strip (SmallLogPolymerBlock.keepElementHolder) draws the new block's log
+        if (BlockWithElementHolder.get(state) instanceof SmallLogPolymerBlock block && block.displayed() != null) {
+            this.blockId = block.displayed();
+        }
         this.element.setItem(SmallLogDisplays.stack(this.blockId, state));
         // A leafy log's leaves stand-in is a full cube; scaled up a little, the branch shows through its faces
         this.element.setScale(new Vector3f(state.getBlock() instanceof SmallLogBlock && state.getValue(SmallLogBlock.HAS_LEAVES) ? 1.01F : 1.0F));

@@ -268,6 +268,12 @@ public record SmallLogPolymerBlock(
         return stored != null ? leavesState(stored, state.getValue(SmallLogBlock.WATERLOGGED)) : null;
     }
 
+    // Stripping changes the block; keeping the display entity avoids a frame of the stand-in. RKC Polymer fork only,
+    // stock Polymer never calls it
+    public boolean keepElementHolder(ServerLevel world, BlockPos pos, BlockState oldState, BlockState newState, ElementHolder holder) {
+        return displayed != null && holder instanceof SmallLogModel model && model.kind() == kind;
+    }
+
     @Override
     public @Nullable ElementHolder createElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState) {
         return displayed != null ? new SmallLogModel(displayed, kind) : null;
