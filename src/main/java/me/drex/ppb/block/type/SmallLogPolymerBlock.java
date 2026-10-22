@@ -5,6 +5,7 @@ import eu.pb4.factorytools.api.block.FactoryBlock;
 import eu.pb4.factorytools.api.block.model.generic.BSMMParticleBlock;
 import eu.pb4.polymer.blocks.api.PolymerBlockModel;
 import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
+import eu.pb4.polymer.core.api.block.PolymerBlockUtils;
 import eu.pb4.polymer.resourcepack.api.AssetPaths;
 import eu.pb4.polymer.resourcepack.api.PackResource;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
@@ -12,6 +13,7 @@ import eu.pb4.polymer.resourcepack.extras.api.format.model.ModelAsset;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import me.drex.ppb.PolymerPatchBundleMod;
 import me.drex.ppb.block.Carriers;
+import me.drex.ppb.mixin.terraform.SmallLogBlockAccessor;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -22,8 +24,10 @@ import net.minecraft.util.ARGB;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,7 +38,7 @@ import java.io.IOException;
 import java.util.*;
 
 public record SmallLogPolymerBlock(
-    Map<Direction.Axis, BlockState> clientBlock) implements FactoryBlock, DisplayCracks, PolymerTexturedBlock, BSMMParticleBlock, TexturedStates {
+    Map<Direction.Axis, BlockState> clientBlock, BlockState leaves, BlockState waterloggedLeaves) implements FactoryBlock, DisplayCracks, PolymerTexturedBlock, BSMMParticleBlock, TexturedStates {
 
     private static final Map<Identifier, ModelAsset> MODELS = new HashMap<>();
     private static final Set<Identifier> USED_TEXTURES = new HashSet<>();
@@ -159,7 +163,12 @@ public record SmallLogPolymerBlock(
         }
     }
 
-    public static SmallLogPolymerBlock of(Identifier id) {
+    public static SmallLogPolymerBlock of(Identifier id, SmallLogBlock block) {
+        // A leafy small log is a full block of its leaves around the log, so it goes out as those leaves
+        BlockState leaves = ((SmallLogBlockAccessor) block).ppb$getLeaves().defaultBlockState()
+            .trySetValue(LeavesBlock.PERSISTENT, true);
+        BlockState waterloggedLeaves = leaves.trySetValue(BlockStateProperties.WATERLOGGED, true);
+        leaves = leaves.trySetValue(BlockStateProperties.WATERLOGGED, false);
         Map<Direction.Axis, BlockState> clientBlock = new HashMap<>();
         Map<String, ModelAsset.TextureSlot> textures = new HashMap<>();
         if (id.getPath().contains("oak_log")) {
@@ -167,7 +176,7 @@ public record SmallLogPolymerBlock(
             for (Direction.Axis value : Direction.Axis.values()) {
                 clientBlock.put(value, state.setValue(RotatedPillarBlock.AXIS, value));
             }
-            return new SmallLogPolymerBlock(clientBlock);
+            return new SmallLogPolymerBlock(clientBlock, leaves, waterloggedLeaves);
         } else {
             textures.put("end", new ModelAsset.TextureValue(id.withPrefix("block/").withSuffix("_top"), false));
             textures.put("side", new ModelAsset.TextureValue(id.withPrefix("block/"), false));
@@ -195,16 +204,19 @@ public record SmallLogPolymerBlock(
             }
         }
 
-        return new SmallLogPolymerBlock(clientBlock);
+        return new SmallLogPolymerBlock(clientBlock, leaves, waterloggedLeaves);
     }
 
     @Override
     public boolean isTextured(BlockState state) {
-        return clientBlock.get(state.getValue(SmallLogBlock.AXIS)) != null;
+        return !state.getValue(SmallLogBlock.HAS_LEAVES) && clientBlock.get(state.getValue(SmallLogBlock.AXIS)) != null;
     }
 
     @Override
     public BlockState getPolymerBlockState(BlockState state, PacketContext context) {
+        if (state.getValue(SmallLogBlock.HAS_LEAVES)) {
+            return PolymerBlockUtils.getPolymerBlockState(state.getValue(SmallLogBlock.WATERLOGGED) ? waterloggedLeaves : leaves, context);
+        }
         return clientBlock.getOrDefault(state.getValue(SmallLogBlock.AXIS), Blocks.BARRIER.defaultBlockState());
     }
 
