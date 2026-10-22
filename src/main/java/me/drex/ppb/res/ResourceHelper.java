@@ -21,7 +21,9 @@ import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 public class ResourceHelper {
@@ -33,6 +35,8 @@ public class ResourceHelper {
         .map(root -> root.resolve("assets"))
         .filter(Files::isDirectory)
         .toList();
+    // Per namespace, the MOD_ASSETS folders that hold it, so a lookup probes only those
+    private static final Map<String, List<Path>> NAMESPACE_ROOTS = new ConcurrentHashMap<>();
     // The root holding assets/: the client jar's on a server, the right game jar on a (split dev) client.
     private static final Path vanillaRoot = PolymerCommonUtils.getClientJarRoot();
 
@@ -61,8 +65,8 @@ public class ResourceHelper {
     }
 
     public static IoSupplier<InputStream> getAsset(String namespace, String path) {
-        for (Path assets : MOD_ASSETS) {
-            Path file = assets.resolve(namespace).resolve(path);
+        for (Path namespaceRoot : namespaceRoots(namespace)) {
+            Path file = namespaceRoot.resolve(path);
             if (Files.isRegularFile(file)) {
                 return IoSupplier.create(file);
             }
@@ -76,6 +80,13 @@ public class ResourceHelper {
         } else {
             return null;
         }
+    }
+
+    private static List<Path> namespaceRoots(String namespace) {
+        return NAMESPACE_ROOTS.computeIfAbsent(namespace, key -> MOD_ASSETS.stream()
+            .map(assets -> assets.resolve(key))
+            .filter(Files::isDirectory)
+            .toList());
     }
 
     public static <T> T decodeAsset(Codec<T> codec, Identifier id, String type, String extension) throws IOException {
