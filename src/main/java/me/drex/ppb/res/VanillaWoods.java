@@ -68,6 +68,7 @@ public final class VanillaWoods {
         if (supplier == null) return null;
         try (InputStream stream = supplier.get()) {
             BufferedImage image = ImageIO.read(stream);
+            if (image == null) return null;
             double r = 0, g = 0, b = 0;
             int count = 0;
             for (int y = 0; y < image.getHeight(); y++) {
