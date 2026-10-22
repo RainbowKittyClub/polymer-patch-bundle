@@ -15,6 +15,8 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.PipeBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
@@ -95,11 +97,17 @@ public final class MiningCracks {
         public static @Nullable List<MiningStageModel> models(Level level, BlockPos pos) {
             var stages = Api.stages;
             var attachment = BlockBoundAttachment.get(level, pos);
-            if (stages == null || attachment == null || !(attachment.holder() instanceof BlockStateModel model)) {
+            if (stages == null || attachment == null) {
+                return null;
+            }
+            var holderOffset = attachment.getPos().subtract(Vec3.atCenterOf(pos));
+            if (attachment.holder() instanceof SmallLogModel smallLog) {
+                return smallLogModels(stages, smallLog, level.getBlockState(pos), holderOffset);
+            }
+            if (!(attachment.holder() instanceof BlockStateModel model)) {
                 return null;
             }
 
-            var holderOffset = attachment.getPos().subtract(Vec3.atCenterOf(pos));
             var list = new ArrayList<MiningStageModel>();
             for (var element : model.modelElements()) {
                 var itemModel = element.getItem().get(DataComponents.ITEM_MODEL);
@@ -111,6 +119,23 @@ public final class MiningCracks {
                     return null;
                 }
                 list.add(new MiningStageModel(crack, transformation(element, holderOffset)));
+            }
+            return list.isEmpty() ? null : list;
+        }
+
+        // One per part of the composite model, each turned as the part is
+        private static @Nullable List<MiningStageModel> smallLogModels(Map<Identifier, List<LazyItemStack>> stages, SmallLogModel smallLog, BlockState state, Vec3 holderOffset) {
+            var parts = SmallLogDisplays.parts(smallLog.blockId());
+            var display = transformation(smallLog.element(), holderOffset);
+            var list = new ArrayList<MiningStageModel>(parts.size());
+            for (int i = 0; i < parts.size(); i++) {
+                var part = parts.get(i);
+                boolean arm = state.getValue(PipeBlock.PROPERTY_BY_DIRECTION.get(SmallLogDisplays.ARMS.get(i)));
+                var crack = stages.get(arm ? part.arm() : part.stub());
+                if (crack == null) {
+                    return null;
+                }
+                list.add(new MiningStageModel(crack, new Matrix4f(display).rotate(part.displayRotation())));
             }
             return list.isEmpty() ? null : list;
         }
