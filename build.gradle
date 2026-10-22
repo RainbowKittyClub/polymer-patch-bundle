@@ -113,9 +113,10 @@ publishMods {
 
 processResources {
 	inputs.property "version", project.version
+	inputs.property "terraform_api_version", project.terraform_api_version
 
 	filesMatching("fabric.mod.json") {
-		expand "version": inputs.properties.version
+		expand "version": inputs.properties.version, "terraform_api_version": inputs.properties.terraform_api_version
 	}
 }
 

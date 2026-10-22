@@ -248,8 +248,7 @@ public record SmallLogPolymerBlock(
 
     // The RKC Polymer fork asks what this player's client holds at pos; stock Polymer never calls it
     public BlockState getPolymerBlockStateAt(BlockState state, BlockPos pos, ServerPlayer player) {
-        BlockState stored = storedLeaves(state, player.level(), pos);
-        return PolymerBlockUtils.getPolymerBlockState(stored != null ? stored : state, player.connection.getPacketContext());
+        return PolymerBlockUtils.getPolymerBlockState(withStoredLeaves(state, player.level(), pos), player.connection.getPacketContext());
     }
 
     /** The persistent leaves state a leafy small log goes out as. */
@@ -257,6 +256,12 @@ public record SmallLogPolymerBlock(
         return leaves.defaultBlockState()
             .trySetValue(LeavesBlock.PERSISTENT, true)
             .trySetValue(BlockStateProperties.WATERLOGGED, waterlogged);
+    }
+
+    /** The leaves a leafy small log at pos carries when they aren't its own; any other state as it is. */
+    public static BlockState withStoredLeaves(BlockState state, BlockGetter level, BlockPos pos) {
+        BlockState stored = state.getBlock() instanceof SmallLogBlock ? storedLeaves(state, level, pos) : null;
+        return stored != null ? stored : state;
     }
 
     // The leaves of a leafy log at pos when they aren't its own, else null

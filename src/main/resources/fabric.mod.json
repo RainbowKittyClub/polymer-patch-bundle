@@ -23,5 +23,8 @@
     "minecraft": ">=26.3",
     "java": ">=21",
     "fabric-api": "*"
+  },
+  "breaks": {
+    "terraform-wood-api-v1": "<${terraform_api_version}"
   }
 }
