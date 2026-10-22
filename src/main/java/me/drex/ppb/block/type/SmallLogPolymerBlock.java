@@ -16,16 +16,19 @@ import me.drex.ppb.block.Carriers;
 import me.drex.ppb.block.DetailedBlocks;
 import me.drex.ppb.block.SmallLogDisplays;
 import me.drex.ppb.block.SmallLogModel;
-import me.drex.ppb.mixin.terraform.SmallLogBlockAccessor;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
+import net.minecraft.network.protocol.game.ClientboundBundlePacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.RotatedPillarBlock;
@@ -169,10 +172,8 @@ public record SmallLogPolymerBlock(
 
     public static SmallLogPolymerBlock of(Identifier id, SmallLogBlock block) {
         // A leafy small log is a full block of its leaves around the log, so it goes out as those leaves
-        BlockState leaves = ((SmallLogBlockAccessor) block).ppb$getLeaves().defaultBlockState()
-            .trySetValue(LeavesBlock.PERSISTENT, true);
-        BlockState waterloggedLeaves = leaves.trySetValue(BlockStateProperties.WATERLOGGED, true);
-        leaves = leaves.trySetValue(BlockStateProperties.WATERLOGGED, false);
+        BlockState leaves = leavesState(block.getLeaves(), false);
+        BlockState waterloggedLeaves = leavesState(block.getLeaves(), true);
         // Players with detailed small logs see a chorus plant, the same shape, under a display of the real log
         Identifier displayed = SmallLogDisplays.register(id) ? id : null;
         Map<Direction.Axis, BlockState> clientBlock = new HashMap<>();
@@ -232,6 +233,50 @@ public record SmallLogPolymerBlock(
             return Blocks.CHORUS_PLANT.withPropertiesOf(state);
         }
         return clientBlock.getOrDefault(state.getValue(SmallLogBlock.AXIS), Blocks.BARRIER.defaultBlockState());
+    }
+
+    // A log leafed with other leaves keeps them per position, so each one follows its chunk or update.
+    // Bundled: Polymer runs this while draining its after-ack queue, and a bare update of a Polymer state
+    // would queue into that list mid-walk (ConcurrentModificationException, kick)
+    @Override
+    public void onPolymerBlockSend(BlockState state, BlockPos.MutableBlockPos pos, ServerPlayer player) {
+        BlockState stored = storedLeaves(state, player.level(), pos);
+        if (stored != null) {
+            player.connection.send(new ClientboundBundlePacket(List.of(new ClientboundBlockUpdatePacket(pos.immutable(), stored))));
+        }
+    }
+
+    // The RKC Polymer fork asks what this player's client holds at pos; stock Polymer never calls it
+    public BlockState getPolymerBlockStateAt(BlockState state, BlockPos pos, ServerPlayer player) {
+        return PolymerBlockUtils.getPolymerBlockState(withStoredLeaves(state, player.level(), pos), player.connection.getPacketContext());
+    }
+
+    /** The persistent leaves state a leafy small log goes out as. */
+    public static BlockState leavesState(Block leaves, boolean waterlogged) {
+        return leaves.defaultBlockState()
+            .trySetValue(LeavesBlock.PERSISTENT, true)
+            .trySetValue(BlockStateProperties.WATERLOGGED, waterlogged);
+    }
+
+    /** The leaves a leafy small log at pos carries when they aren't its own; any other state as it is. */
+    public static BlockState withStoredLeaves(BlockState state, BlockGetter level, BlockPos pos) {
+        BlockState stored = state.getBlock() instanceof SmallLogBlock ? storedLeaves(state, level, pos) : null;
+        return stored != null ? stored : state;
+    }
+
+    // The leaves of a leafy log at pos when they aren't its own, else null
+    private static @Nullable BlockState storedLeaves(BlockState state, BlockGetter level, BlockPos pos) {
+        if (!state.getValue(SmallLogBlock.HAS_LEAVES)) {
+            return null;
+        }
+        Block stored = SmallLogBlock.LEAVES.get(level, pos);
+        return stored != null ? leavesState(stored, state.getValue(SmallLogBlock.WATERLOGGED)) : null;
+    }
+
+    // Stripping changes the block; keeping the display entity avoids a frame of the stand-in. RKC Polymer fork only,
+    // stock Polymer never calls it
+    public boolean keepElementHolder(ServerLevel world, BlockPos pos, BlockState oldState, BlockState newState, ElementHolder holder) {
+        return displayed != null && holder instanceof SmallLogModel model && model.kind() == kind;
     }
 
     @Override

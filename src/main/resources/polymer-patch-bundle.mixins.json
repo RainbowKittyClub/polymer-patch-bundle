@@ -13,9 +13,11 @@
 		"VehicleEntityAccessor",
 		"blockus.BlockusItemsMixin",
 		"terraform.BareSmallLogBlockMixin",
-		"terraform.SmallLogBlockAccessor",
 		"terraform.SmallLogBlockMixin",
 		"terraform.SmallLogBlockBreakingMixin",
+		"terraform.SmallLogFallParticlesMixin",
+		"terraform.SmallLogFallSoundMixin",
+		"terraform.SmallLogStepSoundMixin",
 		"terraform.TerraformBoatItemHelperImplMixin"
 	],
 	"injectors": {

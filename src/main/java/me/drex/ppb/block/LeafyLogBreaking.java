@@ -1,14 +1,13 @@
 package me.drex.ppb.block;
 
 import com.terraformersmc.terraform.wood.api.block.SmallLogBlock;
-import me.drex.ppb.mixin.terraform.SmallLogBlockAccessor;
+import me.drex.ppb.block.type.SmallLogPolymerBlock;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -26,8 +25,7 @@ public final class LeafyLogBreaking {
                 || !(level instanceof ServerLevel serverLevel) || !(player instanceof ServerPlayer serverPlayer)) {
                 return true;
             }
-            BlockState leaves = ((SmallLogBlockAccessor) block).ppb$getLeaves().defaultBlockState()
-                .trySetValue(LeavesBlock.PERSISTENT, true);
+            BlockState leaves = SmallLogPolymerBlock.leavesState(block.leavesAt(level, pos), false);
             // A client that broke the block itself (creative, instant mining) already showed the leaves breaking
             serverLevel.levelEvent(PredictedBreakEffects.isBrokenByClient(serverPlayer, pos) ? serverPlayer : null,
                 LevelEvent.PARTICLES_AND_SOUND_DESTROY_BLOCK, pos, Block.getId(leaves));
