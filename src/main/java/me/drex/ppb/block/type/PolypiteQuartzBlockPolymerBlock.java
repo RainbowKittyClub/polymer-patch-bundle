@@ -22,7 +22,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
-public record PolypiteQuartzBlockPolymerBlock() implements FactoryBlock, PolymerTexturedBlock, BSMMParticleBlock {
+public record PolypiteQuartzBlockPolymerBlock() implements FactoryBlock, DisplayCracks, PolymerTexturedBlock, BSMMParticleBlock {
     public static final PolypiteQuartzBlockPolymerBlock INSTANCE = new PolypiteQuartzBlockPolymerBlock();
     private static final Map<Direction, BlockState> STATES_REGULAR = Util.makeEnumMap(Direction.class, x -> PolymerBlockResourceUtils.requestEmpty(BlockModelType.getTrapdoor(x, false)));
 

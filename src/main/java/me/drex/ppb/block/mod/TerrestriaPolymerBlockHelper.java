@@ -7,6 +7,7 @@ import com.terraformersmc.terrestria.block.TallCattailBlock;
 import eu.pb4.polymer.blocks.api.BlockModelType;
 import eu.pb4.polymer.core.api.block.PolymerBlock;
 import me.drex.ppb.block.type.BaseFactoryBlock;
+import me.drex.ppb.block.type.SaguaroPolymerBlock;
 import me.drex.ppb.block.type.StatePolymerBlock;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
@@ -32,7 +33,7 @@ public class TerrestriaPolymerBlockHelper implements ModPolymerBlockHelper {
             return StatePolymerBlock.of(id, block, BlockModelType.LEAVES);
         }
         return switch (block) {
-            case SaguaroCactusBlock ignored -> BaseFactoryBlock.CACTUS;
+            case SaguaroCactusBlock ignored -> SaguaroPolymerBlock.of(id);
             case BasaltGrassBlock ignored -> StatePolymerBlock.of(id, block, BlockModelType.BIOME_COLORED_LEAVES, StatePolymerBlock.of(id, block, BlockModelType.FULL_BLOCK), state -> !state.getValue(BlockStateProperties.SNOWY));
             case CattailBlock ignored -> StatePolymerBlock.of(id, block, BlockModelType.KELP);
             // Clients fill kelp with water, and the upper half stands above it

@@ -24,7 +24,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public record BaseFactoryBlock(Function<BlockState, BlockState> blockStateFunction, boolean tick,
-                               BiFunction<BlockState, BlockPos, BlockModel> modelFunction) implements FactoryBlock, PolymerTexturedBlock, BSMMParticleBlock {
+                               BiFunction<BlockState, BlockPos, BlockModel> modelFunction) implements FactoryBlock, DisplayCracks, PolymerTexturedBlock, BSMMParticleBlock {
     public BaseFactoryBlock(BlockState clientState, boolean tick,
                             BiFunction<BlockState, BlockPos, BlockModel> modelFunction) {
         this(state -> clientState, tick, modelFunction);

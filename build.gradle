@@ -2,6 +2,7 @@ plugins {
 	id 'net.fabricmc.fabric-loom' version '1.16-SNAPSHOT'
 	id "me.modmuss50.mod-publish-plugin" version "1.1.0"
 	id 'maven-publish'
+	id 'com.gradleup.shadow' version "${shadow_version}" apply false
 }
 
 version = "$project.mod_version+$project.minecraft_version"
@@ -16,6 +17,35 @@ repositories {
 	maven { url 'https://maven.nucleoid.xyz/releases' }
 	maven { url 'https://maven.terraformersmc.com/' }
 	mavenLocal()
+}
+
+// RKC: kalic0re's settings client (config, rule, text, command), relocated into ppb's package and
+// copied into the plain jar, so Loom's nested jars (factorytools, mixson) stay as they are
+configurations {
+	kalic0re
+}
+
+def kalic0reShared = tasks.register('kalic0reShared', Jar) {
+	archiveBaseName = 'kalic0re-shared'
+	destinationDirectory = layout.buildDirectory.dir('shade')
+	from({ configurations.kalic0re.collect { zipTree(it) } }) {
+		['config', 'rule', 'text', 'command'].each { include "club/rainbowkitty/kalic0re/common/${it}/**" }
+	}
+}
+
+configurations {
+	kalic0reShade
+}
+
+dependencies {
+	kalic0reShade files(kalic0reShared)
+}
+
+def relocatedKalic0re = tasks.register('relocatedKalic0re', com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
+	archiveBaseName = 'kalic0re-relocated'
+	destinationDirectory = layout.buildDirectory.dir('shade')
+	configurations = [project.configurations.kalic0reShade]
+	relocate 'club.rainbowkitty.kalic0re.common', 'me.drex.ppb.shaded.kalic0re'
 }
 
 dependencies {
@@ -51,6 +81,10 @@ dependencies {
 	implementation "eu.pb4:polymer-resource-pack-extras:${project.polymer_version}"
 	implementation("eu.pb4:polymer-autohost:${project.polymer_version}")
 	implementation "eu.pb4:polymer-virtual-entity:${project.polymer_version}"
+
+	// Non-transitive: only the relocated helpers below are used, never kalic0re as a mod
+	kalic0re("club.rainbowkitty.kalic0re:kalic0re:${project.kalic0re_version}") { transitive = false }
+	implementation files(relocatedKalic0re)
 }
 
 publishMods {
@@ -100,6 +134,11 @@ java {
 
 jar {
 	inputs.property "archivesName", project.base.archivesName
+
+	dependsOn relocatedKalic0re
+	from({ zipTree(relocatedKalic0re.get().archiveFile) }) {
+		exclude 'META-INF/**'
+	}
 
 	from("LICENSE") {
 		rename { "${it}_${inputs.properties.archivesName}"}

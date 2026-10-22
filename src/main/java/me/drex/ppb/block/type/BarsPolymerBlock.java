@@ -22,7 +22,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedList;
 
-public record BarsPolymerBlock() implements FactoryBlock, PolymerTexturedBlock, BSMMParticleBlock {
+public record BarsPolymerBlock() implements FactoryBlock, DisplayCracks, PolymerTexturedBlock, BSMMParticleBlock {
 
     private static final Direction[] DIRECTIONS = new Direction[]{
         Direction.NORTH, Direction.EAST,

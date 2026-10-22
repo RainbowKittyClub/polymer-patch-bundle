@@ -1,0 +1,10 @@
+{
+  "config.polymer-patch-bundle.detailed_small_oak_logs": "Detailed small oak logs",
+  "config.polymer-patch-bundle.detailed_small_oak_logs.description": "Draws Terrestria's small oak logs, such as the canyon's bryce trees, at their real size. Turn this off if the game runs slowly near them.",
+  "config.polymer-patch-bundle.detailed_sakura_logs": "Detailed sakura logs",
+  "config.polymer-patch-bundle.detailed_sakura_logs.description": "Draws sakura trunks and branches at their real size. Sakura forests hold thousands of them, so this costs a lot of frame rate.",
+  "config.polymer-patch-bundle.detailed_yucca_palm_logs": "Detailed yucca palm logs",
+  "config.polymer-patch-bundle.detailed_yucca_palm_logs.description": "Draws yucca palm trunks at their real size. Turn this off if the game runs slowly near them.",
+  "config.polymer-patch-bundle.detailed_saguaro_cacti": "Detailed saguaro cacti",
+  "config.polymer-patch-bundle.detailed_saguaro_cacti.description": "Draws saguaro cacti with their arms at their real size, instead of a plain cactus column."
+}

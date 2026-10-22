@@ -30,7 +30,7 @@ import java.util.*;
 import java.util.function.Predicate;
 
 public record StatePolymerBlock(Map<BlockState, BlockState> map,
-                                FactoryBlock fallback) implements FactoryBlock, PolymerTexturedBlock, BSMMParticleBlock, TexturedStates {
+                                FactoryBlock fallback) implements FactoryBlock, DisplayCracks, PolymerTexturedBlock, BSMMParticleBlock, TexturedStates {
 
     public static StatePolymerBlock of(Identifier id, Block block, BlockModelType type) {
         return of(id, block, type, BaseFactoryBlock.BARRIER);

@@ -13,6 +13,10 @@ import eu.pb4.polymer.virtualentity.api.attachment.BlockAwareAttachment;
 import eu.pb4.polymer.virtualentity.impl.HolderHolder;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
+import me.drex.ppb.block.DetailedBlocks;
+import me.drex.ppb.block.LeafyLogBreaking;
+import me.drex.ppb.block.MiningCracks;
+import me.drex.ppb.block.SmallLogDisplays;
 import me.drex.ppb.color.ColorProviderRegistry;
 import me.drex.ppb.color.ColorMapHelper;
 import me.drex.ppb.entity.BoatShells;
@@ -55,6 +59,12 @@ public class PolymerPatchBundleMod implements ModInitializer {
         ResourcePackGenerator.setup();
         PolymerResourcePackUtils.RESOURCE_PACK_AFTER_INITIAL_CREATION_EVENT.register(BoatShells::addAssets);
         ServerLifecycleEvents.SERVER_STARTING.register(server -> PolyBoatEntity.warmTrackedData());
+        MiningCracks.setup();
+        DetailedBlocks.register();
+        SmallLogDisplays.setup();
+        if (FabricLoader.getInstance().isModLoaded("terraform-wood-api-v1")) {
+            LeafyLogBreaking.register();
+        }
         MixsonPatcher.setup();
         if (FabricLoader.getInstance().isModLoaded("cinderscapes")) {
             CinderscapesArmorTrimItemModels.init();

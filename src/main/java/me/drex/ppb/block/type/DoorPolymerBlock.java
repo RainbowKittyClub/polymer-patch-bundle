@@ -25,7 +25,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoorHingeSide;
 import net.minecraft.world.phys.BlockHitResult;
 
-public record DoorPolymerBlock() implements FactoryBlock, PolymerTexturedBlock, BSMMParticleBlock {
+public record DoorPolymerBlock() implements FactoryBlock, DisplayCracks, PolymerTexturedBlock, BSMMParticleBlock {
     public static final DoorPolymerBlock INSTANCE = new DoorPolymerBlock();
     private static final Map<Direction, BlockState> STATES_REGULAR = Util.makeEnumMap(Direction.class, x -> PolymerBlockResourceUtils.requestEmpty(BlockModelType.valueOf("TRAPDOOR_" + switch (x) {
         case UP -> "BOTTOM";

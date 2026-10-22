@@ -22,7 +22,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
-public record ChocolateTabletPolymerBlock() implements FactoryBlock, PolymerTexturedBlock, BSMMParticleBlock {
+public record ChocolateTabletPolymerBlock() implements FactoryBlock, DisplayCracks, PolymerTexturedBlock, BSMMParticleBlock {
     public static final ChocolateTabletPolymerBlock INSTANCE = new ChocolateTabletPolymerBlock();
     private static final Map<Direction, BlockState> STATES_REGULAR = Util.makeEnumMap(Direction.class, x -> PolymerBlockResourceUtils.requestEmpty(BlockModelType.getTrapdoor(x, false)));
 

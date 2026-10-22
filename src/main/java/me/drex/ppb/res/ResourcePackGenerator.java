@@ -56,6 +56,21 @@ public class ResourcePackGenerator {
         return polymerBlock;
     }
 
+    // The model whose elements a display of this one shows once served, after expansion and uv locking
+    public static Identifier servedGeometry(Identifier model) {
+        int uvlock = model.getPath().indexOf("_uvlock_");
+        Identifier base = uvlock < 0 ? model : model.withPath(model.getPath().substring(0, uvlock));
+        try {
+            ModelAsset asset = ResourceHelper.decodeModel(base);
+            if (asset.elements().isEmpty() && asset.parent().isPresent()
+                && (uvlock >= 0 || EXPANDABLE_MODELS.contains(base.withSuffix(".json")))) {
+                return id(asset.parent().get().getPath() + (uvlock < 0 ? "" : model.getPath().substring(uvlock)));
+            }
+        } catch (Throwable ignored) {
+        }
+        return model;
+    }
+
     private static void expandModel(Identifier id) {
         try {
             EXPANDABLE_MODELS.add(id.withSuffix(".json"));

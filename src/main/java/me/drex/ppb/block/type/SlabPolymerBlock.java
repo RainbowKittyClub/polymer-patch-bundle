@@ -28,7 +28,7 @@ import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.phys.BlockHitResult;
 
 public record SlabPolymerBlock(BlockState bottomState,
-                               BlockState bottomStateWaterlogged) implements FactoryBlock, PolymerTexturedBlock, BSMMParticleBlock, TexturedStates {
+                               BlockState bottomStateWaterlogged) implements FactoryBlock, DisplayCracks, PolymerTexturedBlock, BSMMParticleBlock, TexturedStates {
 
     private static final BlockState[] EMPTY_STATES = new BlockState[4];
 

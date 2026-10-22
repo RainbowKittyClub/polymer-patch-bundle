@@ -21,7 +21,7 @@ public class TerraformPolymerBlockHelper implements ModPolymerBlockHelper {
     @Override
     public @Nullable PolymerBlock requestPolymerBlock(Identifier id, Block block) {
         return switch (block) {
-            case SmallLogBlock ignored -> SmallLogPolymerBlock.of(id);
+            case SmallLogBlock smallLog -> SmallLogPolymerBlock.of(id, smallLog);
             case QuarterLogBlock ignored -> {
                 if (Terrestria.getConfigManager().getGeneralConfig().areQuarterLogsEnabled()) {
                     yield StatePolymerBlock.of(id, block, BlockModelType.FULL_BLOCK);
