@@ -93,7 +93,12 @@ public final class ShellCarrier extends ElementHolder {
 
     @Override
     public boolean startWatching(ServerGamePacketListenerImpl player) {
-        return PolymerResourcePackUtils.hasMainPack(player) && super.startWatching(player);
+        if (!showsTo(player.player)) return false;
+        // Spawn where the boat is now and facing its way, since position updates are off
+        dolphin.updateLastSyncedPos();
+        placeholder.updateLastSyncedPos();
+        dolphin.setYaw(boat.getYRot());
+        return super.startWatching(player);
     }
 
     @Override
