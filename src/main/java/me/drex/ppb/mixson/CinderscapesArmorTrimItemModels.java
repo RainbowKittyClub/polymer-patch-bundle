@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.terraformersmc.cinderscapes.Cinderscapes;
+import com.terraformersmc.cinderscapes.init.CinderscapesArmorTrimAssets;
 import com.terraformersmc.cinderscapes.init.CinderscapesArmorTrimMaterials;
 import net.minecraft.resources.Identifier;
 import net.ramixin.mixson.Mixson;
@@ -26,7 +27,6 @@ public final class CinderscapesArmorTrimItemModels {
 
         registerAddTrimsToArmor("helmet", "turtle");
 
-        registerAddTrimsToAtlas("armor_trims");
         registerAddTrimsToAtlas("items");
     }
 
@@ -97,6 +97,6 @@ public final class CinderscapesArmorTrimItemModels {
     }
 
     private static Identifier paletteId(String trim) {
-        return Identifier.fromNamespaceAndPath(Cinderscapes.MOD_ID, "trims/color_palettes/" + trim);
+        return CinderscapesArmorTrimAssets.palette(trim);
     }
 }
