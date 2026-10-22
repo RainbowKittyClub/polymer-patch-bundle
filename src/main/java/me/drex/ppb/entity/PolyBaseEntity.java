@@ -13,8 +13,8 @@ public record PolyBaseEntity(EntityType<?> entityType) implements PolymerEntity 
     // A modded boat shows as the boat of the vanilla wood that looks most like it; rafts as bamboo
     public static PolyBaseEntity createBoat(Identifier entityId) {
         String path = entityId.getPath();
-        boolean chest = path.contains("_chest");
-        if (path.contains("_raft")) {
+        boolean chest = path.endsWith("_chest_boat") || path.endsWith("_chest_raft");
+        if (path.endsWith("_raft")) {
             return new PolyBaseEntity(chest ? EntityTypes.BAMBOO_CHEST_RAFT : EntityTypes.BAMBOO_RAFT);
         }
         String wood = path.replaceFirst("(_chest)?_boat$", "");
