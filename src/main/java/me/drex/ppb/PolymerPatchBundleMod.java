@@ -14,6 +14,7 @@ import eu.pb4.polymer.virtualentity.impl.HolderHolder;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import me.drex.ppb.block.DetailedBlocks;
+import me.drex.ppb.block.LeafyLogBreaking;
 import me.drex.ppb.block.MiningCracks;
 import me.drex.ppb.block.SmallLogDisplays;
 import me.drex.ppb.color.ColorProviderRegistry;
@@ -56,6 +57,9 @@ public class PolymerPatchBundleMod implements ModInitializer {
         MiningCracks.setup();
         DetailedBlocks.register();
         SmallLogDisplays.setup();
+        if (FabricLoader.getInstance().isModLoaded("terraform-wood-api-v1")) {
+            LeafyLogBreaking.register();
+        }
         MixsonPatcher.setup();
         if (FabricLoader.getInstance().isModLoaded("cinderscapes")) {
             CinderscapesArmorTrimItemModels.init();

@@ -12,6 +12,7 @@
 		"terraform.BareSmallLogBlockMixin",
 		"terraform.SmallLogBlockAccessor",
 		"terraform.SmallLogBlockMixin",
+		"terraform.SmallLogBlockBreakingMixin",
 		"terraform.TerraformBoatItemHelperImplMixin"
 	],
 	"injectors": {

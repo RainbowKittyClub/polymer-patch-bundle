@@ -56,7 +56,7 @@ public record PredictedBreakEffects(ServerPlayer player, boolean sound, boolean 
     }
 
     // Polymer without this API can only tell creative, where the client always breaks the block itself
-    private static boolean isBrokenByClient(ServerPlayer player, BlockPos pos) {
+    static boolean isBrokenByClient(ServerPlayer player, BlockPos pos) {
         if (IS_BROKEN_BY_CLIENT == null) {
             return player.getAbilities().instabuild;
         }
