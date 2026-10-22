@@ -22,8 +22,9 @@ import java.util.TreeMap;
 // Textured shells over modded boats for pack clients: an item model of the vanilla hull, held by a
 // carrier dolphin riding last (ShellCarrier), drawn exactly over the nearest-wood stand-in boat
 public final class BoatShells {
-    // Carrier scales: far it stops drawing at the same distance as the boat, near its box stays small
-    public static final float FAR_SCALE = 1.37f;
+    // Carrier scales: far its box (0.8 x scale) outdraws the boat's (1.104) by more than the 0.6 seat offset,
+    // so it stops drawing no sooner than the boat; near its box stays small
+    public static final float FAR_SCALE = 1.41f;
     public static final float NEAR_SCALE = 0.5f;
     // The carrier always rides behind another passenger (ShellCarrier), so it takes the back seat
     private static final double SEAT = -0.6;
