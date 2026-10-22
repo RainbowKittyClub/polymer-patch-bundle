@@ -79,7 +79,13 @@ public final class MiningCracks {
             var map = new HashMap<Identifier, List<LazyItemStack>>();
             for (var block : blocks) {
                 for (var model : displayModels(block)) {
-                    map.computeIfAbsent(model, x -> MiningStageModel.stagesOf(ResourcePackGenerator.servedGeometry(x)));
+                    if (map.containsKey(model)) continue;
+                    // One bad model keeps the cube for its block, not the whole pack build from finishing
+                    try {
+                        map.put(model, MiningStageModel.stagesOf(ResourcePackGenerator.servedGeometry(model)));
+                    } catch (Throwable e) {
+                        PolymerPatchBundleMod.LOGGER.warn("Failed to request crack models for {}: {}", model, e);
+                    }
                 }
             }
             stages = Map.copyOf(map);
