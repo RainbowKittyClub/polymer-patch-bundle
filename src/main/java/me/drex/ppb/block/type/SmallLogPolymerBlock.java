@@ -13,6 +13,9 @@ import eu.pb4.polymer.resourcepack.extras.api.format.model.ModelAsset;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import me.drex.ppb.PolymerPatchBundleMod;
 import me.drex.ppb.block.Carriers;
+import me.drex.ppb.block.DetailedBlocks;
+import me.drex.ppb.block.SmallLogDisplays;
+import me.drex.ppb.block.SmallLogModel;
 import me.drex.ppb.mixin.terraform.SmallLogBlockAccessor;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.core.BlockPos;
@@ -38,7 +41,8 @@ import java.io.IOException;
 import java.util.*;
 
 public record SmallLogPolymerBlock(
-    Map<Direction.Axis, BlockState> clientBlock, BlockState leaves, BlockState waterloggedLeaves) implements FactoryBlock, DisplayCracks, PolymerTexturedBlock, BSMMParticleBlock, TexturedStates {
+    Map<Direction.Axis, BlockState> clientBlock, BlockState leaves, BlockState waterloggedLeaves,
+    @Nullable Identifier displayed, DetailedBlocks.Kind kind) implements FactoryBlock, ChorusStandIn, PolymerTexturedBlock, BSMMParticleBlock, TexturedStates {
 
     private static final Map<Identifier, ModelAsset> MODELS = new HashMap<>();
     private static final Set<Identifier> USED_TEXTURES = new HashSet<>();
@@ -169,6 +173,8 @@ public record SmallLogPolymerBlock(
             .trySetValue(LeavesBlock.PERSISTENT, true);
         BlockState waterloggedLeaves = leaves.trySetValue(BlockStateProperties.WATERLOGGED, true);
         leaves = leaves.trySetValue(BlockStateProperties.WATERLOGGED, false);
+        // Players with detailed small logs see a chorus plant, the same shape, under a display of the real log
+        Identifier displayed = SmallLogDisplays.register(id) ? id : null;
         Map<Direction.Axis, BlockState> clientBlock = new HashMap<>();
         Map<String, ModelAsset.TextureSlot> textures = new HashMap<>();
         if (id.getPath().contains("oak_log")) {
@@ -176,7 +182,7 @@ public record SmallLogPolymerBlock(
             for (Direction.Axis value : Direction.Axis.values()) {
                 clientBlock.put(value, state.setValue(RotatedPillarBlock.AXIS, value));
             }
-            return new SmallLogPolymerBlock(clientBlock, leaves, waterloggedLeaves);
+            return new SmallLogPolymerBlock(clientBlock, leaves, waterloggedLeaves, displayed, DetailedBlocks.Kind.of(id));
         } else {
             textures.put("end", new ModelAsset.TextureValue(id.withPrefix("block/").withSuffix("_top"), false));
             textures.put("side", new ModelAsset.TextureValue(id.withPrefix("block/"), false));
@@ -204,7 +210,7 @@ public record SmallLogPolymerBlock(
             }
         }
 
-        return new SmallLogPolymerBlock(clientBlock, leaves, waterloggedLeaves);
+        return new SmallLogPolymerBlock(clientBlock, leaves, waterloggedLeaves, displayed, DetailedBlocks.Kind.of(id));
     }
 
     @Override
@@ -213,16 +219,24 @@ public record SmallLogPolymerBlock(
     }
 
     @Override
+    public boolean drawsChorus(BlockState state) {
+        return displayed != null && !state.getValue(SmallLogBlock.HAS_LEAVES);
+    }
+
+    @Override
     public BlockState getPolymerBlockState(BlockState state, PacketContext context) {
         if (state.getValue(SmallLogBlock.HAS_LEAVES)) {
             return PolymerBlockUtils.getPolymerBlockState(state.getValue(SmallLogBlock.WATERLOGGED) ? waterloggedLeaves : leaves, context);
+        }
+        if (drawsChorus(state) && DetailedBlocks.shows(context, kind)) {
+            return Blocks.CHORUS_PLANT.withPropertiesOf(state);
         }
         return clientBlock.getOrDefault(state.getValue(SmallLogBlock.AXIS), Blocks.BARRIER.defaultBlockState());
     }
 
     @Override
     public @Nullable ElementHolder createElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState) {
-        return null;
+        return displayed != null ? new SmallLogModel(displayed, kind) : null;
     }
 
     @Override

@@ -13,7 +13,9 @@ import eu.pb4.polymer.virtualentity.api.attachment.BlockAwareAttachment;
 import eu.pb4.polymer.virtualentity.impl.HolderHolder;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
+import me.drex.ppb.block.DetailedBlocks;
 import me.drex.ppb.block.MiningCracks;
+import me.drex.ppb.block.SmallLogDisplays;
 import me.drex.ppb.color.ColorProviderRegistry;
 import me.drex.ppb.color.ColorMapHelper;
 import me.drex.ppb.mixson.CinderscapesArmorTrimItemModels;
@@ -52,6 +54,8 @@ public class PolymerPatchBundleMod implements ModInitializer {
         PolymerResourcePackUtils.RESOURCE_PACK_CREATION_EVENT.register(ResourceHelper::init);
         ResourcePackGenerator.setup();
         MiningCracks.setup();
+        DetailedBlocks.register();
+        SmallLogDisplays.setup();
         MixsonPatcher.setup();
         if (FabricLoader.getInstance().isModLoaded("cinderscapes")) {
             CinderscapesArmorTrimItemModels.init();
