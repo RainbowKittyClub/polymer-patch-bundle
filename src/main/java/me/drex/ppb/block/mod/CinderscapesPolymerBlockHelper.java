@@ -23,6 +23,8 @@ public class CinderscapesPolymerBlockHelper implements ModPolymerBlockHelper {
             // Could be improved by using textured blockstates for layers 1 and 8, but models for 2-7
             // but the holders should only be created when necessary
             case AshLayerBlock ignored -> LayerPolymerBlock.of(id, block);
+            // A tripwire stand-in plays stone and changes with its neighbours on the client.
+            case BrambleBerryBushBlock ignored -> BaseFactoryBlock.PLANT;
             case VegetationBlock ignored -> StatePolymerBlock.of(id, block, BlockModelType.TRIPWIRE, BaseFactoryBlock.PLANT);
             case GhastlyEctoplasmBlock ignored -> BaseFactoryBlock.PLANT;
             case PolypiteQuartzBlock ignored -> PolypiteQuartzBlockPolymerBlock.INSTANCE;
