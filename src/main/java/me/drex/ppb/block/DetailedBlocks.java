@@ -5,6 +5,7 @@ import eu.pb4.polymer.core.api.utils.PolymerUtils;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import me.drex.ppb.shaded.kalic0re.config.ModConfig;
 import me.drex.ppb.shaded.kalic0re.config.Setting;
+import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.resources.Identifier;
@@ -24,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class DetailedBlocks {
     private static final ModConfig CONFIG = ModConfig.create("polymer-patch-bundle");
+    private static final Identifier AFTER_HUB = Identifier.fromNamespaceAndPath("polymer-patch-bundle", "after_settings_hub");
     // Read on netty threads while chunks are written, so kept apart from the settings store
     private static final Map<UUID, Set<Kind>> SHOWN = new ConcurrentHashMap<>();
 
@@ -56,8 +58,10 @@ public final class DetailedBlocks {
         // Declares every kind's setting; the config must hold them all before it registers
         Kind[] kinds = Kind.values();
         CONFIG.register();
-        // Before the first chunk goes out; the hub has loaded the player's values during configuration
-        ServerPlayConnectionEvents.INIT.register((handler, server) -> {
+        // The hub publishes a joining player's values in its own JOIN listener, so read them after that;
+        // JOIN still comes before the first chunk goes out
+        ServerPlayConnectionEvents.JOIN.addPhaseOrdering(Event.DEFAULT_PHASE, AFTER_HUB);
+        ServerPlayConnectionEvents.JOIN.register(AFTER_HUB, (handler, sender, server) -> {
             Set<Kind> shown = EnumSet.noneOf(Kind.class);
             for (Kind kind : kinds) {
                 if (kind.setting.get(handler.player)) {
