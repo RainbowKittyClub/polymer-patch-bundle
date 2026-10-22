@@ -18,6 +18,16 @@ public final class VanillaWoods {
     // Woods with boats and all four sign kinds on every client version stand-ins are sent to
     private static final List<String> WOODS = List.of("oak", "spruce", "birch", "jungle", "acacia", "cherry", "dark_oak", "mangrove", "pale_oak");
     private static final String FALLBACK = "birch";
+    // Hand-picked stand-ins, ahead of the colour match
+    private static final Map<Identifier, String> OVERRIDES = Map.of(
+        Identifier.fromNamespaceAndPath("terrestria", "rainbow_eucalyptus"), "pale_oak",
+        Identifier.fromNamespaceAndPath("blockus", "white_oak"), "pale_oak",
+        Identifier.fromNamespaceAndPath("traverse", "fir"), "jungle",
+        Identifier.fromNamespaceAndPath("terrestria", "rubber"), "birch",
+        Identifier.fromNamespaceAndPath("terrestria", "japanese_maple"), "dark_oak",
+        Identifier.fromNamespaceAndPath("terrestria", "hemlock"), "oak",
+        Identifier.fromNamespaceAndPath("terrestria", "cypress"), "birch"
+    );
     private static final Map<Identifier, String> NEAREST = new ConcurrentHashMap<>();
     private static Map<String, double[]> vanillaColours;
 
@@ -29,6 +39,11 @@ public final class VanillaWoods {
     }
 
     private static String find(Identifier wood) {
+        String override = OVERRIDES.get(wood);
+        if (override != null) {
+            PolymerPatchBundleMod.LOGGER.info("Wood {} uses {} boat and sign stand-ins (override)", wood, override);
+            return override;
+        }
         double[] colour = planksColour(wood.getNamespace(), wood.getPath());
         if (colour == null) {
             PolymerPatchBundleMod.LOGGER.warn("No planks texture for wood {}, using {} stand-ins", wood, FALLBACK);
