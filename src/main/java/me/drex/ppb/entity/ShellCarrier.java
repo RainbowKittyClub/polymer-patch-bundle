@@ -24,6 +24,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.Team;
@@ -147,7 +148,10 @@ public final class ShellCarrier extends ElementHolder {
         attribute.setBaseValue(scale);
         return List.of(
             new ClientboundUpdateAttributesPacket(dolphin.getEntityId(), List.of(attribute)),
-            new ClientboundSetEquipmentPacket(dolphin.getEntityId(), List.of(Pair.of(EquipmentSlot.MAINHAND, stack)))
+            // A dragon head (which no dolphin layer draws) widens the client's culling box by 0.5, so the shell
+            // isn't culled while the driver, sitting ahead of the small carrier, can see the hull
+            new ClientboundSetEquipmentPacket(dolphin.getEntityId(), List.of(Pair.of(EquipmentSlot.MAINHAND, stack),
+                Pair.of(EquipmentSlot.HEAD, new ItemStack(Items.DRAGON_HEAD))))
         );
     }
 }
