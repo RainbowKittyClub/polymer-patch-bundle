@@ -27,7 +27,7 @@ public class CinderscapesPolymerBlockHelper implements ModPolymerBlockHelper {
             case BrambleBerryBushBlock ignored -> BaseFactoryBlock.PLANT;
             case VegetationBlock ignored -> StatePolymerBlock.of(id, block, BlockModelType.TRIPWIRE, BaseFactoryBlock.PLANT);
             case GhastlyEctoplasmBlock ignored -> BaseFactoryBlock.PLANT;
-            case PolypiteQuartzBlock ignored -> PolypiteQuartzBlockPolymerBlock.INSTANCE;
+            case PolypiteQuartzBlock ignored -> PolypiteQuartzBlockPolymerBlock.textured(id, block);
             case CinderscapesTransparentBlock ignored -> StatePolymerBlock.of(id, block, BlockModelType.FULL_BLOCK);
             case CinderscapesNyliumBlock ignored -> StatePolymerBlock.of(id, block, BlockModelType.FULL_BLOCK);
             case CinderscapesOreBlock ignored -> StatePolymerBlock.of(id, block, BlockModelType.FULL_BLOCK);
