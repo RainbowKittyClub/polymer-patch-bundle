@@ -22,8 +22,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 public class PolymerBlockHelper {
@@ -34,6 +38,9 @@ public class PolymerBlockHelper {
         "cinderscapes", () -> CinderscapesPolymerBlockHelper.INSTANCE,
         "woods_and_mires", () -> WoodsAndMiresPolymerBlockHelper.INSTANCE
     );
+    // RKC Polymer's request by predicate; null on stock Polymer, which hands vines out in pool order.
+    private static final @Nullable MethodHandle REQUEST_MATCHING = findRequestMatching();
+    private static final Predicate<BlockState> USABLE_VINE = PolymerBlockHelper::isUsableVine;
 
     public static void registerPolymerBlock(Identifier id, Block block) {
         boolean transparent = block instanceof TransparentBlock || block instanceof StainedGlassPaneBlock;
@@ -126,12 +133,36 @@ public class PolymerBlockHelper {
     }
 
     /**
-     * A state drawn with these variants; full blocks go through {@link Carriers}.
+     * A state drawn with these variants; full blocks go through {@link Carriers}, vines skip the
+     * states that make a poor plant (see {@link #isUsableVine}).
      */
     public static @Nullable BlockState requestBlock(BlockModelType type, Identifier id, String properties, List<StateModelVariant> variants) {
         var models = variants.stream().map(x -> new PolymerBlockModel(x.model(), x.x(), x.y(), x.uvlock(), x.weigth())).toArray(PolymerBlockModel[]::new);
-        return type == BlockModelType.FULL_BLOCK
-            ? Carriers.request(id, properties, "", models)
-            : PolymerBlockResourceUtils.requestBlock(type, models);
+        if (type == BlockModelType.FULL_BLOCK) {
+            return Carriers.request(id, properties, "", models);
+        }
+        if (type == BlockModelType.VINES && REQUEST_MATCHING != null) {
+            try {
+                return (BlockState) REQUEST_MATCHING.invokeExact(type, USABLE_VINE, models);
+            } catch (Throwable e) {
+                throw new IllegalStateException(e);
+            }
+        }
+        return PolymerBlockResourceUtils.requestBlock(type, models);
+    }
+
+    // Twisting vines or berry-less cave vines: a full-height outline and no light. Weeping vines
+    // outline only the top half, and berries glow and get picked on the client.
+    private static boolean isUsableVine(BlockState state) {
+        return state.is(Blocks.TWISTING_VINES) || state.is(Blocks.CAVE_VINES) && !state.getValue(CaveVines.BERRIES);
+    }
+
+    private static @Nullable MethodHandle findRequestMatching() {
+        try {
+            return MethodHandles.publicLookup().findStatic(PolymerBlockResourceUtils.class, "requestBlock",
+                MethodType.methodType(BlockState.class, BlockModelType.class, Predicate.class, PolymerBlockModel[].class));
+        } catch (ReflectiveOperationException e) {
+            return null;
+        }
     }
 }
