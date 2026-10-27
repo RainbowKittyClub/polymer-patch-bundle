@@ -14,17 +14,22 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomModelData;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 public class BlockStateModel extends BlockModel {
     private final List<ItemDisplayElement> modelElements = new ArrayList<>();
     private final float viewRange;
     private boolean shifty = false;
+    private boolean outset = false;
+    private Predicate<BlockState> shownFor = state -> true;
 
     public BlockStateModel(float viewRange) {
         this.viewRange = viewRange;
@@ -47,6 +52,22 @@ public class BlockStateModel extends BlockModel {
         return this;
     }
 
+    // Draws a hair outside the block's sides and top, so a vanilla stand-in of the same shape never shows through.
+    public BlockStateModel outset() {
+        outset = true;
+        return this;
+    }
+
+    // Draws only while the block's state passes; a state change in place keeps the holder, so it must go blank.
+    public BlockStateModel shownFor(Predicate<BlockState> predicate) {
+        shownFor = predicate;
+        return this;
+    }
+
+    private List<BlockStateModelManager.ModelGetter> models() {
+        return shownFor.test(this.blockState()) ? BlockStateModelManager.get(this.blockState()) : List.of();
+    }
+
     public List<ItemDisplayElement> modelElements() {
         return Collections.unmodifiableList(this.modelElements);
     }
@@ -54,14 +75,14 @@ public class BlockStateModel extends BlockModel {
     public void notifyUpdate(HolderAttachment.UpdateType updateType) {
         super.notifyUpdate(updateType);
         if (updateType == BlockAwareAttachment.BLOCK_STATE_UPDATE) {
-            this.applyModel(BlockStateModelManager.get(this.blockState()), this.blockPos());
+            this.applyModel(this.models(), this.blockPos());
         }
     }
 
     @Override
     protected void onAttachmentSet(HolderAttachment attachment, @Nullable HolderAttachment oldAttachment) {
         super.onAttachmentSet(attachment, oldAttachment);
-        this.applyModel(BlockStateModelManager.get(this.blockState()), this.blockPos());
+        this.applyModel(this.models(), this.blockPos());
     }
 
     private void applyModel(List<BlockStateModelManager.ModelGetter> models, BlockPos pos) {
@@ -118,6 +139,10 @@ public class BlockStateModel extends BlockModel {
         if (shifty) {
             i = Math.abs((i + pos.getX() + pos.getY() + pos.getZ()) % 5);
             element.setOffset(new Vec3(i / 5000f, i / 5000f, i / 5000f).subtract(5 / 5000f / 2));
+        }
+        if (outset) {
+            element.setScale(new Vector3f(1.01f, 1f, 1.01f));
+            element.setOffset(new Vec3(0, 0.005, 0));
         }
     }
 }
