@@ -41,6 +41,8 @@ public class PolymerBlockHelper {
     // RKC Polymer's request by predicate; null on stock Polymer, which hands vines out in pool order.
     private static final @Nullable MethodHandle REQUEST_MATCHING = findRequestMatching();
     private static final Predicate<BlockState> USABLE_VINE = PolymerBlockHelper::isUsableVine;
+    // Berry-less cave vines only: a full-width column like a bush's, with no glow and no picking.
+    public static final Predicate<BlockState> CAVE_VINE = state -> state.is(Blocks.CAVE_VINES) && !state.getValue(CaveVines.BERRIES);
 
     public static void registerPolymerBlock(Identifier id, Block block) {
         boolean transparent = block instanceof TransparentBlock || block instanceof StainedGlassPaneBlock;
@@ -137,13 +139,21 @@ public class PolymerBlockHelper {
      * states that make a poor plant (see {@link #isUsableVine}).
      */
     public static @Nullable BlockState requestBlock(BlockModelType type, Identifier id, String properties, List<StateModelVariant> variants) {
+        return requestBlock(type, id, properties, variants, type == BlockModelType.VINES ? USABLE_VINE : null);
+    }
+
+    /**
+     * As {@link #requestBlock(BlockModelType, Identifier, String, List)}, the stand-in limited to states
+     * {@code standIn} accepts where RKC Polymer allows it.
+     */
+    public static @Nullable BlockState requestBlock(BlockModelType type, Identifier id, String properties, List<StateModelVariant> variants, @Nullable Predicate<BlockState> standIn) {
         var models = variants.stream().map(x -> new PolymerBlockModel(x.model(), x.x(), x.y(), x.uvlock(), x.weigth())).toArray(PolymerBlockModel[]::new);
         if (type == BlockModelType.FULL_BLOCK) {
             return Carriers.request(id, properties, "", models);
         }
-        if (type == BlockModelType.VINES && REQUEST_MATCHING != null) {
+        if (standIn != null && REQUEST_MATCHING != null) {
             try {
-                return (BlockState) REQUEST_MATCHING.invokeExact(type, USABLE_VINE, models);
+                return (BlockState) REQUEST_MATCHING.invokeExact(type, standIn, models);
             } catch (Throwable e) {
                 throw new IllegalStateException(e);
             }
