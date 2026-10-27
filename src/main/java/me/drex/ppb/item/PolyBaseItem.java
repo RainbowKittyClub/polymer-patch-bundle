@@ -15,13 +15,14 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 
 public record PolyBaseItem(Item item) implements PolymerItem {
-    // A block item takes RKC Polymer's stand-in policy when present; anything else, or stock Polymer, the trial key.
+    // A block item takes RKC Polymer's stand-in policy when present; anything else, or stock Polymer, the
+    // firework star that policy gives an unpinned block item.
     @Override
     public Item getPolymerItem(ItemStack itemStack, PacketContext packetContext) {
         if (item instanceof BlockItem blockItem && StandInItems.available()) {
             return StandInItems.item(blockItem, packetContext);
         }
-        return Items.TRIAL_KEY;
+        return Items.FIREWORK_STAR;
     }
 
     @Override

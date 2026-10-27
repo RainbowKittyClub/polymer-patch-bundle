@@ -41,6 +41,11 @@ public record StatePolymerBlock(Map<BlockState, BlockState> map,
     }
 
     public static StatePolymerBlock of(Identifier id, Block block, BlockModelType type, FactoryBlock fallback, Predicate<BlockState> canUseBlock) {
+        return of(id, block, type, fallback, canUseBlock, null);
+    }
+
+    // As above, every stand-in drawn from the states standIn accepts (null: the pool's own default).
+    public static StatePolymerBlock of(Identifier id, Block block, BlockModelType type, FactoryBlock fallback, Predicate<BlockState> canUseBlock, @Nullable Predicate<BlockState> standIn) {
         try {
             BlockStateAsset blockStateAsset = ResourceHelper.decodeBlockState(id);
 
@@ -57,7 +62,7 @@ public record StatePolymerBlock(Map<BlockState, BlockState> map,
                     var properties = Carriers.properties(state);
                     var variants = Carriers.holdsStableSlot(id, properties) ? match(list, state, canUseBlock) : null;
                     if (variants != null) {
-                        cache.computeIfAbsent(variants, c -> PolymerBlockHelper.requestBlock(type, id, properties, c));
+                        cache.computeIfAbsent(variants, c -> request(type, id, properties, c, standIn));
                     }
                 }
             }
@@ -65,7 +70,7 @@ public record StatePolymerBlock(Map<BlockState, BlockState> map,
             for (var state : block.getStateDefinition().getPossibleStates()) {
                 var variants = match(list, state, canUseBlock);
                 if (variants != null) {
-                    map.put(state, cache.computeIfAbsent(variants, c -> PolymerBlockHelper.requestBlock(type, id, Carriers.properties(state), c)));
+                    map.put(state, cache.computeIfAbsent(variants, c -> request(type, id, Carriers.properties(state), c, standIn)));
                 }
             }
             PolymerPatchBundleMod.LOGGER.debug("{} uses block states {} from {}", id, cache.size(), type);
@@ -74,6 +79,12 @@ public record StatePolymerBlock(Map<BlockState, BlockState> map,
             PolymerPatchBundleMod.LOGGER.error("Failed to handle state block {}", id, e);
             return null;
         }
+    }
+
+    private static @Nullable BlockState request(BlockModelType type, Identifier id, String properties, List<StateModelVariant> variants, @Nullable Predicate<BlockState> standIn) {
+        return standIn == null
+            ? PolymerBlockHelper.requestBlock(type, id, properties, variants)
+            : PolymerBlockHelper.requestBlock(type, id, properties, variants, standIn);
     }
 
     // The models of the first variant matching this state, or null when it has none or can't use one

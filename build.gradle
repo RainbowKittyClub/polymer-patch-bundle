@@ -66,9 +66,9 @@ dependencies {
 	compileOnly("com.terraformersmc:biolith-fabric:${project.biolith_version}")
 
 	compileOnly("com.terraformersmc:terrestria:${project.terrestria_version}")
-	compileOnly("maven.modrinth:cinderscapes:${project.cinderscapes_version}")
+	compileOnly("com.terraformersmc:cinderscapes:${project.cinderscapes_version}") { transitive = false }
 	compileOnly("com.terraformersmc:traverse:${project.traverse_version}")
-	compileOnly files("libs/WoodsAndMires-2.1.2+26.2.jar")
+	compileOnly files("libs/WoodsAndMires-2.1.3-rkc+26.3.jar")
 	compileOnly("maven.modrinth:blockus:${project.blockus_version}")
 
 
